@@ -13,9 +13,17 @@ dotenv.config();
 const cors = require("cors");
 const { loginRateLimiter } = require("./utils/middleware.js");
 
-// CORS configuration
+// CORS configuration - supports both local and production environments
+const corsOrigins = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "http://localhost:5175",
+  // Add your Render frontend URL here after deployment
+  // "https://your-frontend.onrender.com"
+];
+
 app.use(cors({
-  origin: ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5175"],
+  origin: corsOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']

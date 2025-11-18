@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: notehub-backend
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: MONGODB_URI
+        scope: run
+        value: ${MONGODB_URI}
+      - key: JWT_SECRET
+        scope: run
+        value: ${JWT_SECRET}
+      - key: PORT
+        scope: run
+        value: 8000
+
+  - type: web
+    name: notehub-frontend
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build
+    startCommand: cd frontend && npm run preview
+    envVars:
+      - key: VITE_API_URL
+        scope: run
+        value: ${BACKEND_URL}
