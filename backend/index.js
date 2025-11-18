@@ -7,16 +7,23 @@ const postrouter=require("./Routes/Postrout.js")
 const dirrouter=require("./Routes/DirRoute.js")
 const notes=require("./Routes/notesroute.js")
 const upload=require("./Routes/Upload.js")
+const rateLimit = require('express-rate-limit');
 const cookieParser = require("cookie-parser");
 dotenv.config();
 const cors = require("cors");
+const { loginRateLimiter } = require("./utils/middleware.js");
 
+// CORS configuration
 app.use(cors({
-  origin: "http://localhost:5173", // Vite default port
-  credentials: true // if using cookies
+  origin: ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5175"],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
 app.use(cookieParser())
 app.use(express.json());
+
 app.use('/apii/user',userrouter);
 app.use('/apii/post',postrouter);
 app.use('/apii/dir',dirrouter);

@@ -37,5 +37,5 @@ const DirectorySchema= new mongoose.Schema({
 
 
 },{timestamps:true})
-const Directorymodel= new mongoose.model('Directory',DirectorySchema);
+const Directorymodel= mongoose.model('Directory',DirectorySchema);
 module.exports=Directorymodel

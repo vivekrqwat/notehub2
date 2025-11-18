@@ -71,7 +71,7 @@ const signupdata=(e)=>{
             </button>
           <p
               onClick={() => navigate("/login")}
-              className="text-sm text-blue-600 cursor-pointer hover:underline w-full justify-center"
+              className="text-sm text-blue-600 cursor-pointer hover:underline w-full jus"
             >
               I have an account
             </p>

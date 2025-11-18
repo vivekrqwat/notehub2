@@ -2,12 +2,12 @@ const Postmodel = require('../models/Post');
 const Usermodel = require('../models/User');
 const {error,response} = require('../utils/Error');
 const bcrypt=require("bcryptjs");
-const {assignwebtoken,authenticate} = require('../utils/middleware');
+const {assignwebtoken,authenticate, loginRateLimiter} = require('../utils/middleware');
 const moment = require("moment");
 const router=require('express').Router();
 
 //auth
-router.get("/check",authenticate,async(req,res)=>{
+router.get("/check", authenticate, async (req, res) => {
     try{
         const user=req.user;
         if(!user)return
@@ -20,7 +20,7 @@ router.get("/check",authenticate,async(req,res)=>{
 })
 //register
 
-router.post('/signup',  async (req,res)=>{
+router.post('/signup',  loginRateLimiter,async (req,res)=>{
    
     try{        const salt=await bcrypt.genSalt(10);
                 req.body.password=await bcrypt.hash(req.body.password,salt);
@@ -44,7 +44,8 @@ router.post('/signup',  async (req,res)=>{
 })
 //login
 
-router.post('/login',async (req,res)=>{
+// Apply rate limiter to login attempts (protects against brute-force)
+router.post('/login', loginRateLimiter, async (req,res)=>{
     const{username,email,password}=req.body
     
    

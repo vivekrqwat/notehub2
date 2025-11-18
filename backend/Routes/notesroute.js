@@ -3,11 +3,11 @@ const Directorymodel = require('../models/Directory');
 const Notesmodel = require('../models/notes');
 const {error,response} = require('../utils/Error');
 const mongoose = require("mongoose");
-const { authenticate } = require('../utils/middleware');
+const { authenticate, dataRateLimiter } = require('../utils/middleware');
 
 
 // create
-router.post("/",async(req,res)=>{
+router.post("/",dataRateLimiter,async(req,res)=>{
 
     const dirid=req.body.dirid;
     console.log(req.body,"notes")
@@ -46,7 +46,7 @@ router.get('/all',async(req,res)=>{
     }
 })
 //getnotes by id
-router.get('/:id',async(req,res)=>{
+router.get('/:id',dataRateLimiter,async(req,res)=>{
     // id is dirid
     const id=req.params.id
     

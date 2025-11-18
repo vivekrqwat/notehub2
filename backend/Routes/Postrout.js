@@ -100,7 +100,7 @@ router.delete('/update/:id',async(req,res)=>{
    
   
     try{
-       const deletepost=await Postmodel.findByOneAndDelete({uid:id})
+       const deletepost=await Postmodel.deleteMany({uid:id})
         if (!deletepost) return error(res,400,"no updates")
        return response(res,200,deletepost)
 

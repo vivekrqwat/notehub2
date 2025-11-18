@@ -1,31 +1,68 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Upload from '../utils/Upload';
-import { FaTrash } from 'react-icons/fa';
 import Delete from '../utils/Delete';
+import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
+import Speech from './Speech.jsx';
+import { UserStore } from '../store/Userstroe.jsx';
+import CodeEditor from './CodeEditor.jsx';
+import { toast } from 'react-toastify';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Trash2, Copy, Maximize2 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const API = import.meta.env.VITE_API_URL;
 
 export default function Notes() {
-  const [noteid, setNoteid] = useState(localStorage.getItem("noteid"));
+  const [noteid, setNoteid] = useState(localStorage.getItem('noteid'));
   const [notedata, setNotedata] = useState();
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [contentdata, setcontentdata] = useState([]);
+  const [show, setShow] = useState(false);
+  const [descvalue, setdescvalue] = useState('');
+  const [editid, seteditid] = useState(null);
+  const [imgsrc, setimgsrc] = useState('');
   const [formData, setFormData] = useState({
     heading: '',
     desc: '',
     grade: '',
     image: null,
-    imageUrl: ''
+    code: '',
+    Approach: '',
   });
+  const [showcode, setshowcode] = useState(false);
+  const { user } = UserStore();
 
-  const delnotes = async (id) => {
+  const edit = (idx) => {
+    seteditid(idx);
+    setdescvalue(contentdata[idx]?.desc || '');
+  };
+
+  const saveDesc = async (noteId) => {
     try {
-      await Delete("content", id);
-      setcontentdata((prv) => prv.filter((item) => item._id != id[1]));
-    } catch (e) {
-      console.log(e);
+      const updatedContent = contentdata.map((item) =>
+        item._id === noteId ? { ...item, desc: descvalue } : item
+      );
+
+      await axios.put(
+        `${API}/apii/notes/${noteid}`,
+        { content: updatedContent },
+        { withCredentials: true }
+      );
+
+      setcontentdata(updatedContent);
+      seteditid(null);
+    } catch (error) {
+      console.error('Error saving description:', error);
+      toast.error('Failed to save description');
     }
   };
 
@@ -36,7 +73,18 @@ export default function Notes() {
       setNotedata(res.data);
       setcontentdata(res.data.content);
     } catch (err) {
-      console.log("Error fetching notes:", err);
+      console.log('Error fetching notes:', err);
+      toast.error('Failed to fetch notes');
+    }
+  };
+
+  const delnotes = async (id) => {
+    try {
+      await Delete('content', id);
+      fetchNote();
+    } catch (e) {
+      console.log(e);
+      toast.error('Failed to delete note');
     }
   };
 
@@ -44,135 +92,334 @@ export default function Notes() {
     e.preventDefault();
     setLoading(true);
     try {
-      let Img = await Upload(formData.image);
+      // Validate required fields
+      if (!formData.heading.trim()) {
+        toast.error('Please enter a heading');
+        setLoading(false);
+        return;
+      }
+      if (!formData.desc.trim()) {
+        toast.error('Please enter a description');
+        setLoading(false);
+        return;
+      }
+      if (!formData.grade) {
+        toast.error('Please select a difficulty level');
+        setLoading(false);
+        return;
+      }
+
+      let Img = "";
+      try {
+        Img = await Upload(formData.image);
+      } catch (uploadErr) {
+        console.error('Upload failed:', uploadErr);
+        toast.error('Failed to upload image. Continuing without image...');
+        // Continue without image if upload fails
+      }
+
       const noteToAdd = {
         heading: formData.heading,
         desc: formData.desc,
         grade: formData.grade,
+        code: formData.code,
+        Approach: formData.Approach,
         img: Img,
       };
       const data = {
         content: [...(notedata?.content || []), noteToAdd],
       };
-      const res = await axios.put(`${API}/apii/notes/${noteid}`, data);
-      setNotedata(res.data);
-      setFormData({ heading: '', desc: '', grade: '', image: null, imageUrl: '' });
+      
+      console.log('Submitting note data:', data);
+      console.log('Note ID:', noteid);
+      
+      const response = await axios.put(`${API}/apii/notes/${noteid}`, data, {
+        withCredentials: true,
+      });
+      
+      console.log('Note saved response:', response.data);
+      
+      await axios.post(`${API}/apii/user/submission/${user._id}`, {}, {
+        withCredentials: true,
+      });
+      
+      setNotedata((prev) => ({ ...prev, content: data.content }));
+      setFormData({
+        heading: '',
+        desc: '',
+        grade: '',
+        image: null,
+        code: '',
+        Approach: '',
+      });
       setShowForm(false);
       fetchNote();
+      toast.success('Note added successfully');
     } catch (err) {
-      console.error("Error saving note", err);
+      console.error('Error saving note:', err);
+      console.error('Error response:', err.response?.data);
+      console.error('Error message:', err.message);
+      toast.error(err.response?.data?.message || 'Failed to save note');
     } finally {
       setLoading(false);
     }
   };
 
-  const getGradeColorClass = (grade) => {
-    switch (grade) {
-      case "green": return "bg-green-500";
-      case "red": return "bg-red-500";
-      case "yellow": return "bg-yellow-400";
-      default: return "bg-gray-500";
+  const getGradeColor = (grade) => {
+    const colors = {
+      green: 'bg-green-500',
+      red: 'bg-red-500',
+      yellow: 'bg-yellow-400',
+    };
+    return colors[grade] || 'bg-gray-500';
+  };
+
+  const handlecopy = async (code) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      toast.success('Copied to clipboard');
+    } catch {
+      toast.error('Failed to copy');
     }
   };
 
   useEffect(() => {
     if (noteid) {
-      localStorage.setItem("noteid", noteid);
+      localStorage.setItem('noteid', noteid);
       fetchNote();
     }
   }, [noteid]);
 
-  if (!noteid) return <div>No note selected</div>;
-  if (loading) return <div>Loading...</div>;
+  if (!noteid) return <div className="text-center p-8">No note selected</div>;
 
   return (
-    <div className="min-h-screen bg-[#1F1D1D] text-white p-4 sm:p-6">
-      <div className="max-w-4xl mx-auto w-full">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-xl sm:text-2xl font-bold">{notedata?.heading}</h1>
-          <button
-            className="bg-[#facc15] text-black px-4 py-2 rounded-xl font-semibold text-sm sm:text-base"
+    <div className="min-h-screen bg-background text-foreground p-4 sm:p-6">
+      {show && <Speech setshow={setShow} desc={setFormData} />}
+
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">{notedata?.heading}</h1>
+          <Button
             onClick={() => setShowForm(!showForm)}
+            className="bg-primary hover:bg-primary/90"
           >
-            {showForm ? 'Close' : 'Add'}
-          </button>
+            {showForm ? 'Close' : 'Add Note'}
+          </Button>
         </div>
 
         {showForm && (
-          <form
-            className="bg-[#2a2a2a] p-4 rounded-xl mb-6 w-full sm:min-w-[55%]"
-            onSubmit={handleSubmit}
-          >
-            <input
-              type="text"
-              placeholder="@write Heading"
-              className="w-full p-2 mb-2 rounded-md bg-[#1F1D1D] text-white"
-              name="heading"
-              value={formData.heading}
-              onChange={(e) => setFormData({ ...formData, heading: e.target.value })}
-              required
-            />
-            <textarea
-              placeholder="@write your notes"
-              className="w-full p-2 mb-2 rounded-md bg-[#1F1D1D] text-white"
-              name="desc"
-              value={formData.desc}
-              onChange={(e) => setFormData({ ...formData, desc: e.target.value })}
-              required
-            />
-            <input
-              type="file"
-              name="image"
-              className="mb-2"
-              onChange={(e) => setFormData({ ...formData, image: e.target.files[0] })}
-            />
-            <input
-              type="text"
-              placeholder="Optional image URL"
-              className="w-full p-2 mb-2 rounded-md bg-[#1F1D1D] text-white"
-              name="imageUrl"
-              value={formData.imageUrl}
-              onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-            />
-            <div className="flex items-center gap-3 mb-3">
-              {['yellow', 'green', 'red'].map((color) => (
-                <div
-                  key={color}
-                  className={`w-6 h-6 rounded-md cursor-pointer ${getGradeColorClass(color)}`}
-                  onClick={() => setFormData({ ...formData, grade: color })}
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle>Create New Note</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <Input
+                  type="text"
+                  placeholder="Write heading"
+                  value={formData.heading}
+                  onChange={(e) =>
+                    setFormData({ ...formData, heading: e.target.value })
+                  }
+                  required
+                  className="bg-input border-border"
                 />
-              ))}
-            </div>
-            <button
-              type="submit"
-              className="bg-[#22c55e] px-4 py-2 rounded-xl text-white font-semibold w-full sm:w-auto"
-            >
-              Save
-            </button>
-          </form>
+
+                <Textarea
+                  placeholder={
+                    showcode ? 'Write question' : 'Write description'
+                  }
+                  value={formData.desc}
+                  onChange={(e) =>
+                    setFormData({ ...formData, desc: e.target.value })
+                  }
+                  required
+                  rows={8}
+                  className="bg-input border-border"
+                />
+
+                <Button
+                  type="button"
+                  onClick={() => setshowcode((prev) => !prev)}
+                  variant="outline"
+                  className="w-full border-border"
+                >
+                  {showcode ? 'Hide Code' : 'Show Code'}
+                </Button>
+
+                {showcode && (
+                  <>
+                    <Textarea
+                      placeholder="Write approach"
+                      value={formData.Approach}
+                      onChange={(e) =>
+                        setFormData({ ...formData, Approach: e.target.value })
+                      }
+                      rows={5}
+                      className="bg-input border-border"
+                    />
+                    <Textarea
+                      placeholder="Write code"
+                      value={formData.code}
+                      onChange={(e) =>
+                        setFormData({ ...formData, code: e.target.value })
+                      }
+                      rows={7}
+                      className="bg-input border-border font-mono"
+                    />
+                  </>
+                )}
+
+                <Input
+                  type="file"
+                  onChange={(e) =>
+                    setFormData({ ...formData, image: e.target.files[0] })
+                  }
+                  className="bg-input border-border"
+                />
+
+                <div className="flex gap-3">
+                  {['yellow', 'green', 'red'].map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      className={`w-8 h-8 rounded-md transition-transform hover:scale-110 ${getGradeColor(color)} ${
+                        formData.grade === color ? 'ring-2 ring-ring' : ''
+                      }`}
+                      onClick={() => setFormData({ ...formData, grade: color })}
+                    />
+                  ))}
+                </div>
+
+                <div className="flex gap-3 flex-col sm:flex-row">
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="bg-primary hover:bg-primary/90 flex-1"
+                  >
+                    {loading ? 'Saving...' : 'Save'}
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => setShow(true)}
+                    className="bg-secondary hover:bg-secondary/90 flex-1"
+                  >
+                    Audio to Text
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
         )}
 
-        <div className="space-y-4 overflow-y-auto max-h-[80vh] pr-2">
+        <div className="space-y-4 max-h-[80vh] overflow-y-auto pr-2">
           {contentdata.map((note, idx) => (
-            <div key={idx} className="bg-[#2a2a2a] p-4 rounded-xl w-full">
-              <div className="flex items-center gap-2 mb-2 justify-between">
-                <div className="flex">
-                  <div className={`w-4 h-4 rounded-md ${getGradeColorClass(note.grade)}`}></div>
-                  <h2 className="font-bold capitalize ml-2">{note.heading}</h2>
+            <Card
+              key={idx}
+              className="bg-card border-border hover:border-primary/50 transition-colors"
+            >
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-4 h-4 rounded-md ${getGradeColor(
+                        note.grade
+                      )}`}
+                    />
+                    <CardTitle className="text-2xl capitalize">
+                      {note.heading}
+                    </CardTitle>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => delnotes([noteid, note._id])}
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 size={18} />
+                  </Button>
                 </div>
-                <button className="text-red-400 hover:text-red-500" onClick={() => delnotes([noteid, note._id])}>
-                  <FaTrash size={18} />
-                </button>
-              </div>
-              <p className="text-sm mb-2 text-gray-200">{note.desc}</p>
-              {note.img && (
-                <img
-                  src={note.img}
-                  alt="note-img"
-                  className="rounded-md w-full max-w-xs mb-2"
-                />
-              )}
-            </div>
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                {editid === idx ? (
+                  <div className="space-y-3">
+                    <Textarea
+                      value={descvalue}
+                      onChange={(e) => setdescvalue(e.target.value)}
+                      rows={18}
+                      className="bg-input border-border font-mono"
+                    />
+                    <div className="flex gap-3 justify-end">
+                      <Button
+                        onClick={() => saveDesc(note._id)}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        Save
+                      </Button>
+                      <Button
+                        onClick={() => seteditid(null)}
+                        variant="outline"
+                        className="border-border"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <p
+                    onClick={() => edit(idx)}
+                    className="text-base text-muted-foreground whitespace-pre-wrap cursor-pointer hover:text-foreground transition-colors leading-relaxed"
+                  >
+                    {note.desc}
+                  </p>
+                )}
+
+                {note.Approach && (
+                  <>
+                    <hr className="border-border" />
+                    <p className="text-base text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                      {note.Approach}
+                    </p>
+                  </>
+                )}
+
+                {note.img && (
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <img
+                        src={note.img}
+                        alt="note-img"
+                        className="rounded-md w-full cursor-pointer hover:opacity-90 transition-opacity"
+                      />
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl bg-card border-border">
+                      <img
+                        src={note.img}
+                        alt="note-img-expanded"
+                        className="w-full h-auto rounded-md"
+                      />
+                    </DialogContent>
+                  </Dialog>
+                )}
+
+                {note.code && (
+                  <>
+                    <hr className="border-border" />
+                    <Button
+                      onClick={() => handlecopy(note.code)}
+                      size="sm"
+                      variant="outline"
+                      className="border-border"
+                    >
+                      <Copy size={16} className="mr-2" />
+                      Copy Code
+                    </Button>
+                    <CodeEditor cd={note.code} />
+                  </>
+                )}
+              </CardContent>
+            </Card>
           ))}
         </div>
       </div>

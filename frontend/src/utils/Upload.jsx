@@ -7,8 +7,11 @@ export default async function Upload(image) {
 
   if (image) {
     try {
-      const auth = await axios.get(`${API}/apii/upcheck/auth`);
+      console.log("Starting image upload for:", image.name);
+      
+      const auth = await axios.get(`${API}/apii/upcheck/auth`,{withCredentials:true});
       const res = auth.data;
+      console.log("Got upload signature successfully");
 
       const formData = new FormData();
       formData.append("file", image);
@@ -26,8 +29,11 @@ export default async function Upload(image) {
 
       imgUrl = upload.data.url;
       console.log("Uploaded image URL:", imgUrl);
+      return imgUrl;
     } catch (err) {
       console.error("Image upload error:", err);
+      console.error("Upload error details:", err.response?.data || err.message);
+      throw err; // Re-throw to let caller handle it
     }
   }
 

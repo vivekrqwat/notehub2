@@ -21,15 +21,17 @@ export default function App() {
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
-console.log("user check",user)
+// console.log("user check",user)
 
 if (loading) return <Loading />;
 
 
   return (
-    <BrowserRouter>
-      <ToastContainer />
-      <Routes>{
+  <div className="dark min-h-screen bg-[#0a0a0a] text-gray-100">
+
+      <BrowserRouter>
+        <ToastContainer />
+        <Routes>{
       user?
       
         (<>
@@ -61,6 +63,7 @@ if (loading) return <Loading />;
           element={!user ? <Signup /> : <Navigate to="/" />}
         />
       </Routes>
-    </BrowserRouter>
+      </BrowserRouter>
+    </div>
   );
 }

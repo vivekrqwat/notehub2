@@ -1,7 +1,7 @@
 const router=require('express').Router();
 const Directorymodel = require('../models/Directory');
 const {error,response} = require('../utils/Error');
-const { authenticate } = require('../utils/middleware');
+const { authenticate, dataRateLimiter } = require('../utils/middleware');
 
 
 // create
@@ -33,7 +33,7 @@ router.get('/all',async(req,res)=>{
     }
 })
 //get by id 
-router.get('/:id',async(req,res)=>{
+router.get('/:id',dataRateLimiter,async(req,res)=>{
     try{
        const uid=req.params.id
        console.log("dir id",uid)
@@ -61,14 +61,19 @@ router.put("/:id",authenticate,async(req,res)=>{
 })
 //delete
 router.delete("/:id",async(req,res)=>{
-    const {id}=req.params.id
+    const {id}=req.params
+    console.log("Delete request for directory ID:", id);
     try{
         const deletedir= await Directorymodel.findByIdAndDelete(id)
-             return response(res,200,deletedir)
+        console.log("Delete result:", deletedir);
+        if (!deletedir) return error(res,404,{message:"Directory not found"})
+        console.log("Directory deleted successfully");
+        return response(res,200,{message:"Directory deleted successfully", data: deletedir})
 
     }
     catch(e){
-        return error(res,404,{error:e,message:"on Deletion dir"})
+        console.error("Delete error:", e);
+        return error(res,404,{error:e.message,message:"on Deletion dir"})
     }
 })
 

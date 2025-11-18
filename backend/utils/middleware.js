@@ -1,6 +1,7 @@
 const jwt=require('jsonwebtoken');
 const { error } = require('./Error');
 const Usermodel = require('../models/User');
+const rateLimit = require("express-rate-limit");
 
  async function assignwebtoken(data,res){
     // console.log(process.env.JT)
@@ -10,8 +11,9 @@ const Usermodel = require('../models/User');
    res.cookie("jwt", token, {
   maxAge: 7 * 24 * 60 * 60 * 1000,
   httpOnly: true,
-  secure: true,         // Needed for HTTPS (Render)
-  sameSite: "None",     // Allow cross-origin cookies
+  secure: process.env.NODE_ENV === 'production',  // Only use secure in production
+  sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+  path: "/"
 });
     return token;
 
@@ -39,4 +41,32 @@ const authenticate=async (req,res,next)=>{
         return error(res,400,{error:e,message:"error in authenticate"})}
 }
 
-module.exports={assignwebtoken,authenticate}
+const loginRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 3, // limit each IP to 3 login requests per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res, next, options) => {
+    console.log(`🚫 Rate limit hit by IP: ${req.ip} at ${new Date().toLocaleTimeString()}`);
+    return res.status(429).json({
+      success: false,
+      message: "Too many login attempts. Please try again after 15 minutes.",
+    });
+  },
+});
+
+const dataRateLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 30, // limit each IP to 30 requests per minute
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res, next, options) => {
+    console.log(`🚫 Rate limit hit by IP: ${req.ip} at ${new Date().toLocaleTimeString()}`);
+    return res.status(429).json({
+      success: false,
+      message: "Too many requests. Please wait a moment before trying again.",
+    });
+  },
+});
+
+module.exports={assignwebtoken,authenticate,loginRateLimiter,dataRateLimiter}

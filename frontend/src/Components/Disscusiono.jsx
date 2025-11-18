@@ -2,13 +2,21 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import { UserStore } from "../store/Userstroe";
 import Upload from "../utils/Upload";
-// import { API } from "../utils/API";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { ImagePlus, Send, Loader2 } from "lucide-react";
+import { toast } from "react-toastify";
+
 const API = import.meta.env.VITE_API_URL;
+
 export default function Discussion() {
   const [post, setPost] = useState([]);
   const [message, setMessage] = useState("");
   const [image, setImage] = useState();
   const [loading, setloading] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
   const { user } = UserStore();
 
   const fetchPosts = async () => {
@@ -17,6 +25,7 @@ export default function Discussion() {
       setPost(res.data);
     } catch (e) {
       console.log(e);
+      toast.error("Failed to load posts");
     }
   };
 
@@ -25,25 +34,39 @@ export default function Discussion() {
   }, []);
 
   const handleSend = async () => {
+    if (!message.trim()) {
+      toast.warning("Please write a message");
+      return;
+    }
+
     try {
       let imgUrl = "";
       setloading(true);
-      imgUrl = await Upload(image);
-      console.log("url", imgUrl);
+      
+      if (image) {
+        imgUrl = await Upload(image);
+      }
 
       const postdata = {
+        uid: "",
         username: user.username,
         email: user?.email,
         desc: message,
         img: imgUrl,
       };
 
-      await axios.post(`${API}/apii/post/`, postdata);
+      await axios.post(`${API}/apii/post/`, postdata, {
+        withCredentials: true,
+      });
+
       setMessage("");
       setImage(null);
+      setPreviewImage(null);
       fetchPosts();
+      toast.success("Post published successfully!");
     } catch (e) {
       console.log("Post error:", e);
+      toast.error("Failed to publish post");
     } finally {
       setloading(false);
     }
@@ -51,72 +74,154 @@ export default function Discussion() {
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    if (file) setImage(file);
+    if (file) {
+      setImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
+  const userInitials = user?.username
+    ?.split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase() || "U";
+
   return (
-    <div className="h-[calc(100vh-100px)] w-full bg-[#1F1D1D] rounded-md p-4 flex flex-col overflow-hidden">
-      {loading ? (
-        <div className="flex-1 flex flex-col items-center justify-center text-white space-y-4">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-blue-500 border-opacity-50"></div>
-          <p className="text-sm text-gray-300">Uploading your post...</p>
-        </div>
-      ) : (
-        <div className="flex-1 overflow-y-auto space-y-4 pr-2">
-          {post.map((post) => (
-            <div
-              key={post._id}
-              className="bg-[#2C2C2C] rounded-lg px-4 py-3 text-sm text-white shadow"
-            >
-              <div className="flex items-center mb-1 gap-2">
-                <div className="w-7 h-7 bg-gray-500 rounded-full" />
-                <div className="flex flex-col gap-1">
-                  <span className="font-semibold text-white">{post.username}</span>
-                  <span className="text-xs text-gray-400">{post.email}</span>
-                </div>
-              </div>
-              <p className="text-gray-200 text-xs leading-relaxed">{post.desc}</p>
-              {post.img && (
-                <img
-                  src={post.img}
-                  className="w-[80%] max-h-[400px] mx-auto mt-2 rounded-md object-contain"
-                />
-              )}
-            </div>
-          ))}
+    <div className="h-[calc(100vh-100px)] w-full bg-background rounded-lg p-4 flex flex-col overflow-hidden">
+      {/* Loading State */}
+      {loading && (
+        <div className="flex-1 flex flex-col items-center justify-center space-y-4">
+          <Loader2 className="h-10 w-10 text-primary animate-spin" />
+          <p className="text-sm text-muted-foreground">
+            Publishing your post...
+          </p>
         </div>
       )}
 
-      {/* Bottom Input Box */}
-      <div className="bg-[#2A2A2A] mt-2 px-4 py-3 rounded-lg shadow-lg">
-        <div className="flex items-center gap-2">
-          <label className="cursor-pointer text-white bg-gray-700 px-3 py-2 rounded-md text-sm hover:bg-gray-600">
-            📷
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="hidden"
-            />
-          </label>
+      {/* Posts Feed */}
+      {!loading && (
+        <div className="flex-1 overflow-y-auto space-y-3 pr-2 mb-4">
+          {post.length > 0 ? (
+            post.map((p) => (
+              <Card
+                key={p._id}
+                className="bg-card border-border hover:border-primary/50 transition-colors"
+              >
+                <CardContent className="p-4 space-y-3">
+                  {/* User Info */}
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
+                        {p.username
+                          ?.split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                          .toUpperCase() || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm truncate">
+                        {p.username}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {p.email}
+                      </p>
+                    </div>
+                  </div>
 
-          <input
-            type="text"
-            name="desc"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="@type message"
-            className="flex-1 px-4 py-2 rounded-md border-none bg-[#F1F1F1] text-black placeholder:text-gray-500"
-          />
+                  {/* Message */}
+                  <p className="text-sm text-foreground leading-relaxed">
+                    {p.desc}
+                  </p>
 
-          <button
-            onClick={handleSend}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-          >
-            Send
-          </button>
+                  {/* Image */}
+                  {p.img && (
+                    <img
+                      src={p.img}
+                      alt="post-image"
+                      className="w-full max-h-96 object-cover rounded-lg"
+                    />
+                  )}
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-muted-foreground text-center">
+                No posts yet. Be the first to share!
+              </p>
+            </div>
+          )}
         </div>
-      </div>
+      )}
+
+      {/* Input Area */}
+      <Card className="bg-card border-border shadow-lg">
+        <CardContent className="p-4 space-y-3">
+          {/* Image Preview */}
+          {previewImage && (
+            <div className="relative inline-block">
+              <img
+                src={previewImage}
+                alt="preview"
+                className="h-20 w-20 object-cover rounded-lg border border-border"
+              />
+              <button
+                onClick={() => {
+                  setImage(null);
+                  setPreviewImage(null);
+                }}
+                className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-destructive/90"
+              >
+                ×
+              </button>
+            </div>
+          )}
+
+          {/* Input Section */}
+          <div className="flex items-end gap-2">
+            <label className="cursor-pointer">
+              <div className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors">
+                <ImagePlus className="h-5 w-5 text-muted-foreground hover:text-foreground" />
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+                disabled={loading}
+              />
+            </label>
+
+            <Input
+              type="text"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Share your thoughts..."
+              onKeyPress={(e) => {
+                if (e.key === "Enter" && !loading) {
+                  handleSend();
+                }
+              }}
+              disabled={loading}
+              className="flex-1 bg-muted border-0 text-foreground placeholder:text-muted-foreground"
+            />
+
+            <Button
+              onClick={handleSend}
+              disabled={loading || !message.trim()}
+              className="bg-primary hover:bg-primary/90 gap-2"
+            >
+              <Send className="h-4 w-4" />
+              <span className="hidden sm:inline">Send</span>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

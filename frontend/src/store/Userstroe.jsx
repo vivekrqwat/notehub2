@@ -22,6 +22,7 @@ export const UserStore = create((set) => ({
 const res = await axios.get(`${API}/apii/user/check`, {
   withCredentials: true,
 });
+console.log("check auth", API,res.data);
       set({ user: res.data, loading: false });
     } catch {
       set({ user: null, isAutth: false, loading: false });
@@ -30,9 +31,9 @@ const res = await axios.get(`${API}/apii/user/check`, {
 
   signup: async (data) => {
     try {
-      const res = await axios.post(`${API}/apii/user/signup`, data);
+      const res = await axios.post(`${API}/apii/user/signup`, data,{withCredentials: true});
       set({ user: res.data });
-      console.log(res.data);
+      console.log("signup",res.data);
     } catch (e) {
       console.log(e);
       toast.error("Wrong credentials or password");
