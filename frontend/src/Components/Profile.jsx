@@ -25,7 +25,7 @@ export default function ProfileRight() {
   });
 
   const localUser = JSON.parse(localStorage.getItem("user1") || "{}");
-
+console.log("Local Usegur");
   // Fetch fresh user data from backend
   useEffect(() => {
     const fetchUserData = async () => {
