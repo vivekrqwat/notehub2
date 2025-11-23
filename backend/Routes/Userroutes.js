@@ -69,25 +69,24 @@ router.post('/login', loginRateLimiter, async (req,res)=>{
 
 })
 //get
-router.get('/:id',authenticate,async (req,res)=>{
-   const {id}=req.params
-    if (req.user._id.toString() !== id) {
-        return error(res, 400, { message: "Not a valid user" });
-    }
-    
-    // console.log(id)
-    try{
-        const user=await Usermodel.findById(id);
-          if(!user)error(res,401,"user not found");
-        //   const {password,...other}=user._doc
-          return response(res,200,user)
-    }
-    catch(e){
-    return error(res,500,{error:e,message:"getting_id__error"})
+router.get("/:id", async (req, res) => {
+  const { id } = req.params;
+  console.log(id,"user id");
+  console.log("Requested user ID:", id);
 
+  try {
+    const user = await Usermodel.findById(id);
+
+    if (!user) {
+      return error(res, 404, { message: "User not found" });
     }
 
-})
+    return response(res, 200, user);
+  } catch (e) {
+    return error(res, 500, { error: e, message: "getting_id_error" });
+  }
+});
+
 //getall
 router.get('/',async (req,res)=>{
    

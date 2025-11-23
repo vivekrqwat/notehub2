@@ -43,7 +43,7 @@ const authenticate=async (req,res,next)=>{
 
 const loginRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 3, // limit each IP to 3 login requests per window
+  max: 15, // limit each IP to 3 login requests per window
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res, next, options) => {

@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, Trash2, Plus, ArrowRight } from "lucide-react";
+import { ChevronDown, Trash2, Plus, ArrowRight, Lock, Unlock } from "lucide-react";
 import axios from "axios";
 import { UserStore } from "../store/Userstroe";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 import Delete from "../utils/Delete";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,7 +26,8 @@ export default function Directory() {
   const [showFormIndex, setShowFormIndex] = useState(null);
   const [dirdata, setdirdata] = useState([]);
   const [notesMap, setNotesMap] = useState({});
-  const [deleteConfirm, setDeleteConfirm] = useState(null); // { type, id, dirId?, itemName }
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [updatingDirId, setUpdatingDirId] = useState(null);
   const { user } = UserStore();
   const [loading, setloading] = useState(false);
   const navigate = useNavigate();
@@ -39,6 +40,30 @@ export default function Directory() {
       setdirdata(resdata.data);
     } catch (e) {
       console.log(e);
+    }
+  };
+
+  const togglePublicPrivate = async (dirId, currentStatus) => {
+    try {
+      setUpdatingDirId(dirId);
+      const newStatus = !currentStatus;
+      console.log(newStatus,"nest status");
+      const response = await axios.put(
+        `${API}/apii/dir/${dirId}`,
+        { isPublic: newStatus },
+        { withCredentials: true }
+      );
+      console.log("Directory privacy updated:", response.data);
+
+      setdirdata((prev) =>
+        prev.map((dir) =>
+          dir._id === dirId ? { ...dir, isPublic: newStatus } : dir
+        )
+      );
+    } catch (e) {
+      console.error("Error updating directory privacy:", e);
+    } finally {
+      setUpdatingDirId(null);
     }
   };
 
@@ -189,7 +214,7 @@ export default function Directory() {
   const gotoNotes = (id, e) => {
     e.preventDefault();
     localStorage.setItem("noteid", id);
-    navigate("/notes");
+    navigate(`/notes/${user._id}`);
   };
 
   if (loading) {
@@ -252,6 +277,21 @@ export default function Directory() {
                   >
                     <Plus size={14} />
                     <span className="hidden sm:inline">Add</span>
+                  </Button>
+
+                  <Button
+                    size="icon"
+                    variant={dir.isPublic ? "default" : "outline"}
+                    onClick={() => togglePublicPrivate(dir._id, dir.isPublic)}
+                    disabled={updatingDirId === dir._id}
+                    className="h-8 w-8 sm:h-9 sm:w-9"
+                    title={dir.isPublic ? "Public" : "Private"}
+                  >
+                    {!dir.isPublic ? (
+                      <Lock size={16}  />
+                    ) : (
+                      <Unlock size={16} />
+                    )}
                   </Button>
 
                   <Button

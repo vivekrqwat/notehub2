@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import Upload from '../utils/Upload';
 import Delete from '../utils/Delete';
@@ -16,12 +17,23 @@ import {
   DialogContent,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import ReadMore from './Readmore.jsx';
 
 const API = import.meta.env.VITE_API_URL;
 
 export default function Notes() {
   const [noteid, setNoteid] = useState(localStorage.getItem('noteid'));
+  const { id: paramsUserId } = useParams(); // Get user ID from URL params
   const [notedata, setNotedata] = useState();
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -30,6 +42,8 @@ export default function Notes() {
   const [descvalue, setdescvalue] = useState('');
   const [editid, seteditid] = useState(null);
   const [imgsrc, setimgsrc] = useState('');
+  const { user } = UserStore();
+  const [isOwner, setIsOwner] = useState(false);
   const [formData, setFormData] = useState({
     heading: '',
     desc: '',
@@ -39,7 +53,17 @@ export default function Notes() {
     Approach: '',
   });
   const [showcode, setshowcode] = useState(false);
-  const { user } = UserStore();
+  const [deleteConfirm, setDeleteConfirm] = useState(null); // { id: [noteid, contentId], itemName }
+
+  // Check if current user is the owner by comparing params user ID with logged-in user ID
+  useEffect(() => {
+    if (paramsUserId && user?._id) {
+      setIsOwner(paramsUserId === user._id);
+    } else {
+      setIsOwner(false);
+    }
+  }, [paramsUserId, user?._id]);
+  
 
   const edit = (idx) => {
     seteditid(idx);
@@ -74,7 +98,7 @@ export default function Notes() {
       setcontentdata(res.data.content);
     } catch (err) {
       console.log('Error fetching notes:', err);
-      toast.error('Failed to fetch notes');
+      // toast.error('Failed to fetch notes');
     }
   };
 
@@ -85,6 +109,24 @@ export default function Notes() {
     } catch (e) {
       console.log(e);
       toast.error('Failed to delete note');
+    }
+  };
+
+  const handleDeleteConfirm = (contentId, contentHeading) => {
+    setDeleteConfirm({ id: [noteid, contentId], itemName: contentHeading });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirm) return;
+    try {
+      await Delete('content', deleteConfirm.id);
+      toast.success('Note deleted');
+      fetchNote();
+    } catch (e) {
+      console.error('Delete failed', e);
+      toast.error('Failed to delete note');
+    } finally {
+      setDeleteConfirm(null);
     }
   };
 
@@ -199,15 +241,17 @@ export default function Notes() {
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">{notedata?.heading}</h1>
-          <Button
-            onClick={() => setShowForm(!showForm)}
-            className="bg-primary hover:bg-primary/90"
-          >
-            {showForm ? 'Close' : 'Add Note'}
-          </Button>
+          {isOwner && (
+            <Button
+              onClick={() => setShowForm(!showForm)}
+              className="bg-primary hover:bg-primary/90"
+            >
+              {showForm ? 'Close' : 'Add Note'}
+            </Button>
+          )}
         </div>
 
-        {showForm && (
+        {showForm && isOwner && (
           <Card className="bg-card border-border">
             <CardHeader>
               <CardTitle>Create New Note</CardTitle>
@@ -330,14 +374,16 @@ export default function Notes() {
                       {note.heading}
                     </CardTitle>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => delnotes([noteid, note._id])}
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                  >
-                    <Trash2 size={18} />
-                  </Button>
+                  {isOwner && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteConfirm(note._id, note.heading)}
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 size={18} />
+                    </Button>
+                  )}
                 </div>
               </CardHeader>
 
@@ -368,10 +414,13 @@ export default function Notes() {
                   </div>
                 ) : (
                   <p
-                    onClick={() => edit(idx)}
-                    className="text-base text-muted-foreground whitespace-pre-wrap cursor-pointer hover:text-foreground transition-colors leading-relaxed"
+                    onClick={() => isOwner && edit(idx)}
+                    className={`text-base text-muted-foreground whitespace-pre-wrap leading-relaxed ${
+                      isOwner ? 'cursor-pointer hover:text-foreground transition-colors' : 'cursor-default'
+                    }`}
                   >
-                    {note.desc}
+                    {/* {note.desc} */}
+                    <ReadMore text={note.desc} onEdit={isOwner ? () => edit(idx) : null} />
                   </p>
                 )}
 
@@ -394,11 +443,11 @@ export default function Notes() {
                       />
                     </DialogTrigger>
                     <DialogContent className="max-w-4xl bg-card border-border">
-                      <img
-                        src={note.img}
-                        alt="note-img-expanded"
-                        className="w-full h-auto rounded-md"
-                      />
+                     <img
+  src={note.img}
+  alt="note-img-expanded"
+  className="w-full aspect-video object-cover rounded-md object-center"
+/>
                     </DialogContent>
                   </Dialog>
                 )}
@@ -422,6 +471,24 @@ export default function Notes() {
             </Card>
           ))}
         </div>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Note</AlertDialogTitle>
+              <AlertDialogDescription>
+                {`Are you sure you want to delete the note "${deleteConfirm?.itemName}"? This action cannot be undone.`}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="flex gap-3 justify-end">
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Delete
+              </AlertDialogAction>
+            </div>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

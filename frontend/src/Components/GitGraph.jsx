@@ -1,12 +1,10 @@
 import React, { useState } from "react";
 import moment from "moment";
-import { UserStore } from "../store/Userstroe";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function GitGraph({ activeDays = [] }) {
-  const { user } = UserStore();
   const [hoveredDate, setHoveredDate] = useState(null);
-  const activeSet = new Set(user?.submission || []);
+  const activeSet = new Set(activeDays || []);
 
   const months = [
     { name: "January", days: 31 },

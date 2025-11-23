@@ -28,7 +28,7 @@ export default function HomePage() {
             <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-blue-400 rounded-br-2xl"></div>
 
             {/* Content */}
-            <div className="relative z-10 space-y-6">
+            <div className="relative space-y-6">
               {/* Welcome message */}
               <div className="space-y-2">
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-200 tracking-wide">
@@ -36,7 +36,7 @@ export default function HomePage() {
                 </h1>
                 <div className="flex items-center justify-center gap-2">
                   <span className="text-3xl sm:text-4xl font-extrabold bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent animate-pulse">
-                    {user?.username || "User"}
+                    {user.user||user?.username || "User"}
                   </span>
                   <span className="text-3xl">👋</span>
                 </div>
@@ -66,7 +66,7 @@ export default function HomePage() {
                 {/* Button shine effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
 
-                <span className="relative z-10 flex items-center justify-center gap-2">
+                <span className="relative flex items-center justify-center gap-2">
                   <svg
                     className="w-5 h-5 transform group-hover:rotate-90 transition-transform duration-300"
                     fill="none"

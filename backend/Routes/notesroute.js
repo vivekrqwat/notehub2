@@ -27,6 +27,7 @@ router.post("/",dataRateLimiter,async(req,res)=>{
         
     // if(!updatedir) return error(res,404,{message:"error on updating dir notes"})
    const savenotes=await notes.save();
+    console.log("notes created",savenotes)
     return response(res,200,savenotes)
 
     }
@@ -50,9 +51,9 @@ router.get('/:id',dataRateLimiter,async(req,res)=>{
     // id is dirid
     const id=req.params.id
     
-    try{ console.log(id,"get")
+    try{ console.log(id,"get1")
         const allnotes=await Notesmodel.find({dirid:id});
-       
+    
        
         
 
@@ -66,8 +67,9 @@ router.get('/all/:id',async(req,res)=>{
     // id is dirid
     const id=req.params.id
     
-    try{ console.log(id,"get")
+    try{ console.log(id,"get1")
         const allnotes=await Notesmodel.findById(id);
+           console.log("js",allnotes);
        
        
         

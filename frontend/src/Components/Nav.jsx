@@ -40,7 +40,7 @@ export default function Navbar() {
             <Button
               variant="ghost"
               className={`
-                flex items-center gap-2 px-4 py-2 rounded-lg transition-all font-medium
+                flex items-center gap-2 px-2 sm:px-4 py-2 rounded-lg transition-all font-medium
                 ${
                   activeTab === "home"
                     ? "bg-[hsl(215,75%,60%)] text-[hsl(215,30%,10%)] shadow-md"
@@ -50,14 +50,14 @@ export default function Navbar() {
               onClick={() => handleNavigation("home", "/")}
             >
               <FaHome className="text-sm" />
-              <span className="text-xs sm:text-sm">Home</span>
+              <span className="hidden sm:inline text-xs sm:text-sm">Home</span>
             </Button>
 
             {/* Discussion Tab */}
             <Button
               variant="ghost"
               className={`
-                flex items-center gap-2 px-4 py-2 rounded-lg transition-all font-medium
+                flex items-center gap-2 px-2 sm:px-4 py-2 rounded-lg transition-all font-medium
                 ${
                   activeTab === "discussion"
                     ? "bg-[hsl(215,75%,60%)] text-[hsl(215,30%,10%)] shadow-md"
@@ -67,7 +67,7 @@ export default function Navbar() {
               onClick={() => handleNavigation("discussion", "/post")}
             >
               <FaComments className="text-sm" />
-              <span className="text-xs sm:text-sm">Discussion</span>
+              <span className="hidden sm:inline text-xs sm:text-sm">Discussion</span>
             </Button>
 
           </div>
