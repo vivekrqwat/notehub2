@@ -7,7 +7,7 @@ const moment = require("moment");
 const router=require('express').Router();
 
 //auth
-router.get("/check", authenticate, noCacheMiddleware, async (req, res) => {
+router.get("/check", authenticate, async (req, res) => {
     try{
         const user=req.user;
         if(!user)return

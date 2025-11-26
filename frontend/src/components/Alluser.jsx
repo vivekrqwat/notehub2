@@ -111,7 +111,7 @@ const GetAllUSer=memo((user,league,userInitials)=>{
                 </Card>
 
 })
-GetAllUSer.displayName = "GetAlluser";
+
 
 export default function Alluser() {
   const navigate = useNavigate();
