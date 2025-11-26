@@ -7,7 +7,7 @@ const moment = require("moment");
 const router=require('express').Router();
 
 //auth
-router.get("/check", authenticate, async (req, res) => {
+router.get("/check", authenticate, noCacheMiddleware, async (req, res) => {
     try{
         const user=req.user;
         if(!user)return
@@ -158,8 +158,12 @@ console.log("hello")
 //logout
 router.post("/logout",async(req,res)=>{
     try{
-           res.cookie("jwt", "", { maxAge: 0 }); 
-               res.status(200).json({ message: "Logged out successfully" });   
+         res.clearCookie('jwt', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      path: "/"
+    }); 
     }catch(e){
         return error(res, 500, { error: e, message: "loging out error" });
     }
