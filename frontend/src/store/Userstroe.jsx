@@ -122,6 +122,7 @@ export const UserStore = create((set) => ({
 
   logout: async () => {
     try {
+      console.log("Initiating logout");
       const res = await axios.post(`${API}/apii/user/logout`, null, {
         withCredentials: true,
       });

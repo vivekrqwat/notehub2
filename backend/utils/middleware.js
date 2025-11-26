@@ -8,11 +8,12 @@ const rateLimit = require("express-rate-limit");
     const token=jwt.sign(data,process.env.JT,{
          expiresIn: "7d",
     })
-   res.cookie("jwt", token, {
+  res.cookie("jwt", token, {
   maxAge: 7 * 24 * 60 * 60 * 1000,
   httpOnly: true,
-
-  path: "/"
+  secure: process.env.NODE_ENV === "production"||true,
+  sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+  path: "/",
 });
     return token;
 

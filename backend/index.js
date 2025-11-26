@@ -16,7 +16,7 @@ const { loginRateLimiter, noCacheMiddleware, cacheMiddleware } = require("./util
 // CORS configuration - supports both local and production environments
 const corsOrigins = [
   "http://localhost:5173",
-  "http://127.0.0.1:5173",
+  "http://localhost:5173/",
   "http://localhost:5175",
   "https://revesion2.onrender.com"
   // Add your Render frontend URL here after deployment

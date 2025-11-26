@@ -158,12 +158,17 @@ console.log("hello")
 //logout
 router.post("/logout",async(req,res)=>{
     try{
-         res.clearCookie('jwt', {
+      console.log("logout route hit");
+   res.clearCookie("jwt", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
-      path: "/"
-    }); 
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+      path: "/",
+    });
+
+    console.log("logout route hit2");
+        return response(res, 200, { message: "Logged out successfully" });
+
     }catch(e){
         return error(res, 500, { error: e, message: "loging out error" });
     }
