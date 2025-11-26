@@ -56,7 +56,7 @@ const loginRateLimiter = rateLimit({
 });
 
 const dataRateLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
+  windowMs: 10 * 60 * 1000, // 1 minute
   max: 30, // limit each IP to 30 requests per minute
   standardHeaders: true,
   legacyHeaders: false,
