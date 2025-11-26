@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserStore } from "../store/Userstroe";
 import Upload from "../utils/Upload";
@@ -19,8 +19,209 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import ReadMore from "./Readmore";
 
+// ============================================
+// LAZY LOAD - Heavy components
+// ============================================
+const CreatePostDialog = lazy(() => import("./CreatePostDialog"));
+
 const API = import.meta.env.VITE_API_URL;
 
+// ============================================
+// POST CARD COMPONENT (extracted & memoized)
+// ============================================
+import { memo } from "react";
+
+const PostCard = memo(({ 
+  post, 
+  user, 
+  expandedComments, 
+  setExpandedComments, 
+  commentText, 
+  setCommentText, 
+  onLike, 
+  onAddComment, 
+  onDeleteComment, 
+  onAvatarClick 
+}) => {
+  return (
+    <Card className="bg-card border-border hover:border-primary/50 transition-colors">
+      <CardContent className="p-4 space-y-3">
+        {/* User Info */}
+        <div className="flex items-center gap-3">
+          <Avatar
+            className="h-8 w-8 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => onAvatarClick(post.uid || post._id)}
+          >
+            <AvatarImage 
+              src='https://api-assets.clashofclans.com/leagues/288/U2acNDRaR5rQDu4Z6pQKaGcjWm9dkSnHMAPZCXrHPB4.png'  
+              alt={post.username}
+            />
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-sm truncate">
+              {post.username}
+            </p>
+            <p className="text-xs text-muted-foreground truncate">
+              {post.email}
+            </p>
+          </div>
+        </div>
+
+        {/* Message */}
+        <ReadMore text={post.desc} />
+
+        {/* Image */}
+        {post.img && (
+          <img
+            src={post.img}
+            alt="post-image"
+            className="w-full max-h-96 object-contain object-center rounded-lg bg-black"
+            loading="lazy"
+          />
+        )}
+
+        {/* Like and Comment Section */}
+        <div className="pt-3 border-t border-border space-y-3">
+          {/* Like Button */}
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onLike(post._id)}
+              className={`gap-2 ${
+                post.likes?.includes(user?._id)
+                  ? "text-red-500 hover:text-red-600"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Heart
+                size={18}
+                fill={post.likes?.includes(user?._id) ? "currentColor" : "none"}
+              />
+              <span className="text-xs">{post.likes?.length || 0}</span>
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() =>
+                setExpandedComments({
+                  ...expandedComments,
+                  [post._id]: !expandedComments[post._id],
+                })
+              }
+              className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <MessageCircle size={16} />
+              <span>{post.comments?.length || 0} comments</span>
+            </Button>
+          </div>
+
+          {/* Comments Section - Show/Hide on Click */}
+          {expandedComments[post._id] && (
+            <CommentsSection
+              post={post}
+              user={user}
+              commentText={commentText}
+              setCommentText={setCommentText}
+              onAddComment={onAddComment}
+              onDeleteComment={onDeleteComment}
+            />
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+});
+
+PostCard.displayName = "PostCard";
+
+// ============================================
+// COMMENTS SECTION COMPONENT (extracted)
+// ============================================
+const CommentsSection = memo(({
+  post,
+  user,
+  commentText,
+  setCommentText,
+  onAddComment,
+  onDeleteComment
+}) => {
+  return (
+    <div className="space-y-3 pt-2 border-t border-border/50">
+      {/* Display Comments */}
+      {post.comments && post.comments.length > 0 && (
+        <div className="space-y-2 max-h-64 overflow-y-auto">
+          {post.comments.map((comment) => (
+            <div key={comment._id} className="text-xs space-y-1 bg-muted/50 p-2 rounded">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1">
+                  <p className="font-semibold text-foreground">
+                    {comment.userName}
+                  </p>
+                  <p className="text-muted-foreground break-words">
+                    {comment.text}
+                  </p>
+                </div>
+                {comment.userId === user?._id && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      onDeleteComment(post._id, comment._id)
+                    }
+                    className="text-destructive hover:text-destructive/80 h-auto p-1 flex-shrink-0"
+                  >
+                    <Trash2 size={14} />
+                  </Button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* No Comments Message */}
+      {(!post.comments || post.comments.length === 0) && (
+        <p className="text-xs text-muted-foreground text-center py-2">
+          No comments yet. Be the first to comment!
+        </p>
+      )}
+
+      {/* Add Comment Input */}
+      <div className="flex gap-2 pt-2 border-t border-border/50">
+        <Input
+          placeholder="Add a comment..."
+          value={commentText[post._id] || ""}
+          onChange={(e) =>
+            setCommentText({ ...commentText, [post._id]: e.target.value })
+          }
+          className="h-8 text-xs bg-input border-border"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              onAddComment(post._id, commentText[post._id]);
+            }
+          }}
+        />
+        <Button
+          size="sm"
+          onClick={() =>
+            onAddComment(post._id, commentText[post._id])
+          }
+          className="h-8 px-2 bg-primary hover:bg-primary/90"
+        >
+          <Send size={14} />
+        </Button>
+      </div>
+    </div>
+  );
+});
+
+CommentsSection.displayName = "CommentsSection";
+
+// ============================================
+// MAIN DISCUSSION COMPONENT
+// ============================================
 export default function Discussion() {
   const navigate = useNavigate();
   const [post, setPost] = useState([]);
@@ -72,7 +273,6 @@ export default function Discussion() {
       await axios.post(`${API}/apii/post/`, postdata, {
         withCredentials: true,
       });
-      console.log("Post created successfully");
 
       setMessage("");
       setImage(null);
@@ -100,15 +300,10 @@ export default function Discussion() {
     }
   };
 
-  // Navigate to user profile when avatar is clicked
   const handleAvatarClick = (userId) => {
-    console.log("Navigating to profile with user ID:", userId);
-    // Use the uid field if available, otherwise use _id
-    const profileId = userId;
-    navigate(`/profile/${profileId}`);
+    navigate(`/profile/${userId}`);
   };
 
-  // Like/Unlike post
   const handleLike = async (postId) => {
     try {
       const res = await axios.put(
@@ -116,7 +311,6 @@ export default function Discussion() {
         {},
         { withCredentials: true }
       );
-      // Update the post in the state
       setPost(post.map(p => p._id === postId ? res.data : p));
     } catch (e) {
       console.log(e);
@@ -124,7 +318,6 @@ export default function Discussion() {
     }
   };
 
-  // Add comment
   const handleAddComment = async (postId, text) => {
     if (!text.trim()) {
       toast.warning("Comment cannot be empty");
@@ -137,7 +330,6 @@ export default function Discussion() {
         { text },
         { withCredentials: true }
       );
-      // Update the post in the state
       setPost(post.map(p => p._id === postId ? res.data : p));
       setCommentText({ ...commentText, [postId]: "" });
       toast.success("Comment added!");
@@ -147,14 +339,12 @@ export default function Discussion() {
     }
   };
 
-  // Delete comment
   const handleDeleteComment = async (postId, commentId) => {
     try {
       const res = await axios.delete(
         `${API}/apii/post/comment/${postId}/${commentId}`,
         { withCredentials: true }
       );
-      // Update the post in the state
       setPost(post.map(p => p._id === postId ? res.data : p));
       toast.success("Comment deleted!");
     } catch (e) {
@@ -180,162 +370,19 @@ export default function Discussion() {
         <div className="flex-1 overflow-y-auto space-y-3 pr-2">
           {post.length > 0 ? (
             post.map((p) => (
-              <Card
+              <PostCard
                 key={p._id}
-                className="bg-card border-border hover:border-primary/50 transition-colors"
-              >
-                <CardContent className="p-4 space-y-3">
-                  {/* User Info */}
-                  <div className="flex items-center gap-3">
-                    <Avatar
-                    
-                      className="h-8 w-8 cursor-pointer hover:opacity-80 transition-opacity"
-                      onClick={() => handleAvatarClick(p.uid || p._id)}
-                    >
-                     <AvatarImage src='../public/BronzeI.webp'  alt={p.username}/>
-                      
-                      {/* <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
-                        {p.username
-                          ?.split(" ")
-                          .map((n) => n[0])
-                          .join("")
-                          .toUpperCase() || "U"}
-                      </AvatarFallback> */}
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm truncate">
-                        {p.username}
-                      </p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {p.email}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Message */}
-                  {/* <p className="text-sm text-foreground leading-relaxed">
-                    {p.desc}
-                  </p> */}
-                  <ReadMore text={p.desc}></ReadMore>
-
-                  {/* Image */}
-                  {p.img && (
-                    <img
-  src={p.img}
-  alt="post-image"
-  className="w-full max-h-96 object-contain object-center rounded-lg bg-black"
-/>
-                  )}
-
-                  {/* Like and Comment Section */}
-                  <div className="pt-3 border-t border-border space-y-3">
-                    {/* Like Button */}
-                    <div className="flex items-center gap-4">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleLike(p._id)}
-                        className={`gap-2 ${
-                          p.likes?.includes(user?._id)
-                            ? "text-red-500 hover:text-red-600"
-                            : "text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        <Heart
-                          size={18}
-                          fill={p.likes?.includes(user?._id) ? "currentColor" : "none"}
-                        />
-                        <span className="text-xs">{p.likes?.length || 0}</span>
-                      </Button>
-
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          setExpandedComments({
-                            ...expandedComments,
-                            [p._id]: !expandedComments[p._id],
-                          })
-                        }
-                        className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        <MessageCircle size={16} />
-                        <span>{p.comments?.length || 0} comments</span>
-                      </Button>
-                    </div>
-
-                    {/* Comments Section - Show/Hide on Click */}
-                    {expandedComments[p._id] && (
-                      <div className="space-y-3 pt-2 border-t border-border/50">
-                        {/* Display Comments */}
-                        {p.comments && p.comments.length > 0 && (
-                          <div className="space-y-2 max-h-64 overflow-y-auto">
-                            {p.comments.map((comment) => (
-                              <div key={comment._id} className="text-xs space-y-1 bg-muted/50 p-2 rounded">
-                                <div className="flex items-start justify-between gap-2">
-                                  <div className="flex-1">
-                                    <p className="font-semibold text-foreground">
-                                      {comment.userName}
-                                    </p>
-                                    <p className="text-muted-foreground break-words">
-                                      {comment.text}
-                                    </p>
-                                  </div>
-                                  {comment.userId === user?._id && (
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() =>
-                                        handleDeleteComment(p._id, comment._id)
-                                      }
-                                      className="text-destructive hover:text-destructive/80 h-auto p-1 flex-shrink-0"
-                                    >
-                                      <Trash2 size={14} />
-                                    </Button>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* No Comments Message */}
-                        {(!p.comments || p.comments.length === 0) && (
-                          <p className="text-xs text-muted-foreground text-center py-2">
-                            No comments yet. Be the first to comment!
-                          </p>
-                        )}
-
-                        {/* Add Comment Input */}
-                        <div className="flex gap-2 pt-2 border-t border-border/50">
-                          <Input
-                            placeholder="Add a comment..."
-                            value={commentText[p._id] || ""}
-                            onChange={(e) =>
-                              setCommentText({ ...commentText, [p._id]: e.target.value })
-                            }
-                            className="h-8 text-xs bg-input border-border"
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                handleAddComment(p._id, commentText[p._id]);
-                              }
-                            }}
-                          />
-                          <Button
-                            size="sm"
-                            onClick={() =>
-                              handleAddComment(p._id, commentText[p._id])
-                            }
-                            className="h-8 px-2 bg-primary hover:bg-primary/90"
-                          >
-                            <Send size={14} />
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+                post={p}
+                user={user}
+                expandedComments={expandedComments}
+                setExpandedComments={setExpandedComments}
+                commentText={commentText}
+                setCommentText={setCommentText}
+                onLike={handleLike}
+                onAddComment={handleAddComment}
+                onDeleteComment={handleDeleteComment}
+                onAvatarClick={handleAvatarClick}
+              />
             ))
           ) : (
             <div className="flex items-center justify-center h-full">

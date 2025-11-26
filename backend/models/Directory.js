@@ -57,6 +57,7 @@ const DirectorySchema = new mongoose.Schema({
 DirectorySchema.index({ upvotes: -1 });
 DirectorySchema.index({ createdAt: -1 });
 DirectorySchema.index({ isPublic: 1, upvotes: -1 });
+DirectorySchema.index({ Dirname: 1 });
 
 const Directorymodel = mongoose.model('Directory', DirectorySchema);
 

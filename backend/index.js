@@ -11,7 +11,7 @@ const rateLimit = require('express-rate-limit');
 const cookieParser = require("cookie-parser");
 dotenv.config();
 const cors = require("cors");
-const { loginRateLimiter } = require("./utils/middleware.js");
+const { loginRateLimiter, noCacheMiddleware, cacheMiddleware } = require("./utils/middleware.js");
 
 // CORS configuration - supports both local and production environments
 const corsOrigins = [
@@ -29,15 +29,21 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+//cache
+app.use((req, res, next) => {
+  res.setHeader("Cache-Control", "public, max-age=3600");
+  next();
+});
+
 
 app.use(cookieParser())
 app.use(express.json());
 
-app.use('/apii/user',userrouter);
-app.use('/apii/post',postrouter);
-app.use('/apii/dir',dirrouter);
-app.use('/apii/notes',notes);
-app.use('/apii/upcheck',upload)
+app.use('/apii/user',noCacheMiddleware,userrouter);
+app.use('/apii/post',cacheMiddleware,postrouter);
+app.use('/apii/dir',cacheMiddleware,dirrouter);
+app.use('/apii/notes',cacheMiddleware,notes);
+app.use('/apii/upcheck',noCacheMiddleware,upload)
 
 dbconnect()
 app.listen(8000,()=>{

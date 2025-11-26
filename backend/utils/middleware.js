@@ -68,5 +68,21 @@ const dataRateLimiter = rateLimit({
     });
   },
 });
+//chace
+const noCacheMiddleware = (req, res, next) => {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  next();
+};
 
-module.exports={assignwebtoken,authenticate,loginRateLimiter,dataRateLimiter}
+const cacheMiddleware = (req, res, next) => {
+  if (req.method === 'GET') {
+    res.setHeader("Cache-Control", "public, max-age=3600"); // 1 hour cache
+  } else {
+    res.setHeader("Cache-Control", "no-store, no-cache");
+  }
+  next();
+};
+
+module.exports={assignwebtoken,authenticate,loginRateLimiter,dataRateLimiter,noCacheMiddleware,cacheMiddleware}

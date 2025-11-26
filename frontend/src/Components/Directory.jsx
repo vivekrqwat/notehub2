@@ -275,7 +275,7 @@ export default function Directory() {
                       setShowFormIndex(showFormIndex === index ? null : index)
                     }
                   >
-                    <Plus size={14} />
+                    <Plus size={5} />
                     <span className="hidden sm:inline">Add</span>
                   </Button>
 
@@ -284,13 +284,13 @@ export default function Directory() {
                     variant={dir.isPublic ? "default" : "outline"}
                     onClick={() => togglePublicPrivate(dir._id, dir.isPublic)}
                     disabled={updatingDirId === dir._id}
-                    className="h-8 w-8 sm:h-9 sm:w-9"
+                    className="h-5 w-5 sm:h-9 sm:w-9"
                     title={dir.isPublic ? "Public" : "Private"}
                   >
                     {!dir.isPublic ? (
-                      <Lock size={16}  />
+                      <Lock size={3}  />
                     ) : (
-                      <Unlock size={16} />
+                      <Unlock size={3} />
                     )}
                   </Button>
 
@@ -301,7 +301,7 @@ export default function Directory() {
                     className="h-8 w-8 sm:h-9 sm:w-9"
                   >
                     <ChevronDown
-                      size={18}
+                      size={10}
                       className={`transition-transform duration-300 ${
                         openDir === dir._id ? "rotate-180" : ""
                       }`}
@@ -312,9 +312,8 @@ export default function Directory() {
                     size="icon"
                     variant="ghost"
                     onClick={() => handleDeleteDirConfirm(dir._id, dir.Dirname)}
-                    className="h-8 w-8 sm:h-9 sm:w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
-                  >
-                    <Trash2 size={16} />
+className="h-6 w-6 p-1 text-destructive hover:text-destructive hover:bg-destructive/10"                  >
+                    <Trash2 size={4} />
                   </Button>
                 </div>
               </div>

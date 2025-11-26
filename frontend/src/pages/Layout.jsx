@@ -3,90 +3,99 @@ import Navbar from "../Components/Nav";
 import ProfileRight from "../Components/Profile";
 import SideLeft from "../Components/Sideleft";
 import { Outlet } from "react-router-dom";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { FaBars, FaTimes } from "react-icons/fa";
 
 export function Layout() {
-  // const [isSidebarVisible, setIsSidebarVisible] = useState(() => {
-  //   // Initialize from localStorage
-  //   const saved = localStorage.getItem("sidebarVisible");
-  //   return saved !== null ? JSON.parse(saved) : true;
-  // });
+  const [isSidebarVisible, setIsSidebarVisible] = useState(() => {
+    // Initialize from localStorage
+    const saved = localStorage.getItem("sidebarVisible");
+    return saved !== null ? JSON.parse(saved) : true;
+  });
 
   // Persist sidebar state to localStorage
-  // useEffect(() => {
-  //   localStorage.setItem("sidebarVisible", JSON.stringify(isSidebarVisible));
-  // }, [isSidebarVisible]);
+  useEffect(() => {
+    localStorage.setItem("sidebarVisible", JSON.stringify(isSidebarVisible));
+  }, [isSidebarVisible]);
 
   // Auto-show sidebar on desktop when window is resized
-  // useEffect(() => {
-  //   const handleResize = () => {
-  //     const isDesktop = window.innerWidth >= 768; // md breakpoint
-  //     if (isDesktop) {
-  //       setIsSidebarVisible(true);
-  //     }
-  //   };
+  useEffect(() => {
+    const handleResize = () => {
+      const isDesktop = window.innerWidth >= 768; // md breakpoint
+      if (isDesktop) {
+        setIsSidebarVisible(true);
+      }
+    };
 
-  //   window.addEventListener("resize", handleResize);
-  //   return () => window.removeEventListener("resize", handleResize);
-  // }, []);
+    window.addEventListener("resize", handleResize);
+    handleResize(); // Check on mount
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
-    <div className="flex h-screen w-full bg-background text-foreground">
+    <div className="flex h-screen w-full bg-[hsl(215,20%,11%)] text-[hsl(215,40%,96%)]">
+      
+      {/* Top Left Toggle Button - Fixed Position (Mobile Only) */}
+      <button
+        className="
+          fixed top-2 left-2 z-50
+          flex items-center justify-center
+          w-8 h-8 bg-[hsl(215,28%,24%)]
+          text-[hsl(215,40%,96%)] rounded-md
+          hover:bg-[hsl(215,28%,30%)]
+          transition-all duration-300
+          border border-[hsl(215,23%,24%)]
+          shadow-md
+          md:hidden
+          focus:outline-none focus:ring-2 focus:ring-[hsl(215,75%,60%)]
+        "
+        onClick={() => setIsSidebarVisible(!isSidebarVisible)}
+        aria-label={isSidebarVisible ? "Hide sidebar" : "Show sidebar"}
+      >
+        <span className="transform hover:scale-110 transition-transform duration-200">
+          {isSidebarVisible ? <FaTimes size={12} /> : <FaBars size={12} />}
+        </span>
+      </button>
+
       {/* Sidebar */}
       <aside
-  className="
-    w-20 sm:w-56
-  
-    overflow-hidden
-    bg-card
-    border-r border-border
-    shadow-sm
-  "
->
-  <SideLeft />
-</aside>
+        className={`
+          transition-all duration-500 ease-in-out
+          ${
+            isSidebarVisible
+              ? "w-16 sm:w-20 md:w-24 lg:w-28 xl:w-[10%] opacity-100"
+              : "w-0 opacity-0"
+          }
+          overflow-hidden bg-[hsl(215,22%,10%)] border-r border-[hsl(215,23%,24%)] shadow-xl
+        `}
+      >
+        <SideLeft />
+      </aside>
 
-      {/* Toggle Button */}
-      {/* <Button
-  onClick={() => setIsSidebarVisible(!isSidebarVisible)}
-  variant="outline"
-  size="icon"
-  className="
-    h-10 w-10
-    fixed top-4 left-2 z-50
-    rounded-md border border-border
-    bg-card hover:bg-card/80
-    text-primary
-    md:hidden
-  "
-  aria-label={isSidebarVisible ? "Hide sidebar" : "Show sidebar"}
->
-  {isSidebarVisible ? "×" : "≡"}
-</Button> */}
-
-
-      {/* Main Content */}
+      {/* Main Content Area */}
       <div className="flex flex-col flex-1 overflow-hidden">
+        
         {/* Navbar */}
-        <nav className="border-b border-border shadow-sm">
+        <div className="border-b border-[hsl(215,23%,24%)] shadow-md">
           <Navbar />
-        </nav>
+        </div>
 
+        {/* Content Layout */}
         <div className="flex flex-1 overflow-hidden">
-          {/* Main Area */}
-          <main className="flex-1 overflow-y-auto">
-            <div className="h-full bg-background p-4 md:p-6 lg:p-8">
+          
+          {/* Main Content */}
+          <main className="flex-1 overflow-y-auto bg-gradient-to-br from-[hsl(215,20%,11%)] via-[hsl(215,20%,13%)] to-[hsl(215,20%,11%)]">
+            <div className="h-full p-4 md:p-6 lg:p-8">
               <div className="max-w-7xl mx-auto">
                 <Outlet />
               </div>
             </div>
           </main>
 
-          {/* Right Sidebar */}
-          <aside className="hidden lg:flex flex-col w-64 xl:w-80 border-l border-border bg-card shadow-sm overflow-y-auto">
+          {/* Right Sidebar - Profile */}
+          <aside className="hidden lg:flex flex-col w-72 xl:w-80 border-l border-[hsl(215,23%,24%)] bg-[hsl(215,22%,10%)] shadow-xl overflow-y-auto">
             <ProfileRight />
           </aside>
+          
         </div>
       </div>
     </div>

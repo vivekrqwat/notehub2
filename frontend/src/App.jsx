@@ -1,98 +1,52 @@
 import './App.css';
 import { Route, Routes, BrowserRouter, Navigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { UserStore } from './store/Userstroe.jsx';
-
-import { Layout } from './pages/Layout';
-import HomePage from './Components/MainBox';
-import Discussion from './Components/Disscusiono';
-import Directory from './Components/Directory';
-import Notes from './Components/Notes';
-import Signup from './pages/Signup';
-import Login from './pages/login';
-import Loading from './pages/Loading.jsx';
-import Collaborative from './Components/Collaborative.jsx';
-import ProfilePage from './pages/profilepage.jsx';
 import { ToastContainer } from 'react-toastify';
-import AllDir from './Components/AllDir.jsx';
-import Alluser from './Components/Alluser.jsx';
 
-// export default function App() {
-//   const { user, checkAuth, initializeUser, loading } = UserStore();
+// ============================================
+// EAGER LOAD - Critical components (loaded immediately)
+// ============================================
+import { Layout } from './pages/Layout';
+import Loading from '@/pages/Loading.jsx';
+import Login from '@/pages/login.jsx';
+import Signup from '@/pages/Signup.jsx';
 
-//   useEffect(() => {
-//     // ✅ CRITICAL: Initialize user from localStorage first
-//     initializeUser();
-    
-//     // ✅ Then check auth with backend
-//     checkAuth();
-//   }, [checkAuth, initializeUser]);
+// ============================================
+// LAZY LOAD - Route components (code split by route)
+// ============================================
+// Home & Main Features
+const HomePage = lazy(() => import('@/components/MainBox.jsx'));
+const Discussion = lazy(() => import('@/components/Disscusiono.jsx'));
+const Directory = lazy(() => import('@/components/Directory.jsx'));
+const Notes = lazy(() => import('@/components/Notes.jsx'));
+const Collaborative = lazy(() => import('@/components/Collaborative.jsx'));
 
-//   // ✅ Show loading screen while checking auth
-//   if (loading) return <Loading />;
+// Profile & Directory Pages
+const ProfilePage = lazy(() => import('@/pages/profilepage.jsx'));
+const AllDir = lazy(() => import('@/components/AllDir.jsx'));
+const Alluser = lazy(() => import('@/components/Alluser.jsx'));
 
-//   // return (
-//   //   <div className="dark min-h-screen bg-background text-foreground">
-//   //     <BrowserRouter>
-//   //       <ToastContainer 
-//   //         position="top-right"
-//   //         autoClose={3000}
-//   //         hideProgressBar={false}
-//   //         newestOnTop={true}
-//   //         closeOnClick
-//   //         rtl={false}
-//   //         pauseOnFocusLoss
-//   //         draggable
-//   //         pauseOnHover
-//   //       />
-        
-//   //       <Routes>
-//   //         {/* ✅ Public Routes - Only accessible when NOT logged in */}
-//   //         <Route
-//   //           path="/login"
-//   //           element={!user ? <Login /> : <Navigate to="/" replace />}
-//   //         />
-//   //         <Route
-//   //           path="/signup"
-//   //           element={!user ? <Signup /> : <Navigate to="/" replace />}
-//   //         />
+// ============================================
+// LOADING FALLBACK COMPONENT
+// ============================================
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <Loading />
+  </div>
+);
 
-//   //         {/* ✅ Protected Routes - Only accessible when logged in */}
-//   //         {user && (
-//   //           <>
-//   //             <Route path="/" element={<Layout />}>
-//   //               <Route index element={<HomePage />} />
-//   //               <Route path="post" element={<Discussion />} />
-//   //               <Route path="dir" element={<Directory />} />
-//   //               <Route path="notes" element={<Notes />} />
-//   //               <Route path="collab" element={<Collaborative />} />
-//   //             </Route>
-//   //             <Route path="/profile/:id" element={<ProfilePage />} />
-//   //           </>
-//   //         )}
-
-//   //         {/* ✅ Redirect all unknown routes appropriately */}
-//   //         <Route
-//   //           path="*"
-//   //           element={user ? <Navigate to="/" replace /> : <Navigate to="/login" replace />}
-//   //         />
-//   //       </Routes>
-//   //     </BrowserRouter>
-//   //   </div>
-//   // );
-
-// }
+// ============================================
+// MAIN APP COMPONENT
+// ============================================
 export default function App() {
   const { user, checkAuth, initializeUser, loading } = UserStore();
-
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
     let mounted = true;
     const init = async () => {
-      // restore local user first (sync)
       initializeUser();
-      // then verify with backend (async)
       await checkAuth();
       if (mounted) setReady(true);
     };
@@ -104,7 +58,7 @@ export default function App() {
 
   return (
     <>
-      {/* 👇 ToastContainer must stay OUTSIDE all conditionals */}
+      {/* ToastContainer stays outside all conditionals */}
       <ToastContainer 
         position="top-right"
         autoClose={3000}
@@ -117,43 +71,66 @@ export default function App() {
         pauseOnHover
       />
 
-      {/* 👇 Now loading cannot hide ToastContainer */}
+      {/* Initial auth loading */}
       {(!ready || loading) ? (
         <Loading />
       ) : (
         <div className="min-h-screen bg-background text-foreground">
           <BrowserRouter>
-            <Routes>
-              <Route
-                path="/login"
-                element={!user ? <Login /> : <Navigate to="/" replace />}
-              />
-              <Route
-                path="/signup"
-                element={!user ? <Signup /> : <Navigate to="/" replace />}
-              />
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                {/* ============================================ */}
+                {/* PUBLIC ROUTES - Accessible without login */}
+                {/* ============================================ */}
+                <Route
+                  path="/login"
+                  element={!user ? <Login /> : <Navigate to="/" replace />}
+                />
+                <Route
+                  path="/signup"
+                  element={!user ? <Signup /> : <Navigate to="/" replace />}
+                />
 
-              {user && (
-                <>
-                  <Route path="/" element={<Layout />}>
-                    <Route index element={<HomePage />} />
-                    <Route path="post" element={<Discussion />} />
-                    <Route path="dir" element={<Directory />} />
-                    <Route path="collab" element={<Collaborative />} />
-                                      <Route path="/notes/:id" element={<Notes />} />
-                                      <Route path="/alldir" element={<AllDir></AllDir>}/>
-                                       <Route path="/allusers" element={<Alluser></Alluser>}/>
-                  </Route>
-                  <Route path="/profile/:id" element={<ProfilePage />} />
+                {/* ============================================ */}
+                {/* PROTECTED ROUTES - Only for logged-in users */}
+                {/* ============================================ */}
+                {user && (
+                  <>
+                    <Route path="/" element={<Layout />}>
+                      {/* Home Page */}
+                      <Route index element={<HomePage />} />
+                      
+                      {/* Discussion/Posts */}
+                      <Route path="post" element={<Discussion />} />
+                      
+                      {/* Directory Features */}
+                      <Route path="dir" element={<Directory />} />
+                      <Route path="alldir" element={<AllDir />} />
+                      
+                      {/* Notes */}
+                      <Route path="notes/:id" element={<Notes />} />
+                      
+                      {/* Collaboration */}
+                      <Route path="collab" element={<Collaborative />} />
+                      
+                      {/* Users */}
+                      <Route path="allusers" element={<Alluser />} />
+                    </Route>
 
-                </>
-              )}
+                    {/* Profile Page - Outside Layout */}
+                    <Route path="/profile/:id" element={<ProfilePage />} />
+                  </>
+                )}
 
-              <Route
-                path="*"
-                element={user ? <Navigate to="/" replace /> : <Navigate to="/login" replace />}
-              />
-            </Routes>
+                {/* ============================================ */}
+                {/* CATCH-ALL - Redirect unknown routes */}
+                {/* ============================================ */}
+                <Route
+                  path="*"
+                  element={user ? <Navigate to="/" replace /> : <Navigate to="/login" replace />}
+                />
+              </Routes>
+            </Suspense>
           </BrowserRouter>
         </div>
       )}
