@@ -143,7 +143,7 @@ router.delete("/dirdelete/:dirid",async(req,res)=>{
 //deletion content of  notes
 router.delete("/Notes/:noteId/content/:contentId",async(req,res)=>{
    const { noteId, contentId } = req.params;
-console.log('notes content')
+console.log('notes content', noteId, contentId);
   try {
     const result = await Notesmodel.findByIdAndUpdate(
       noteId,
