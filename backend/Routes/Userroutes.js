@@ -7,7 +7,7 @@ const moment = require("moment");
 const router=require('express').Router();
 
 //auth
-router.get("/check", authenticate, async (req, res) => {
+router.get("/check",authenticate, async (req, res) => {
     try{
         const user=req.user;
         if(!user)return
@@ -71,8 +71,8 @@ router.post('/login', loginRateLimiter, async (req,res)=>{
 //get
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
-  console.log(id,"user id");
-  console.log("Requested user ID:", id);
+  // console.log(id,"user id");
+  // console.log("Requested user ID:", id);
 
   try {
     const user = await Usermodel.findById(id);
@@ -136,8 +136,8 @@ router.post("/submission/:id", authenticate, async (req, res) => {
   try {
     const uid = req.params.id;
     const formatted = moment().format("YYYY-MM-DD");
-console.log("hello")
-    console.log("✅ Submission attempt for:", formatted);
+// console.log("hello")
+//     console.log("✅ Submission attempt for:", formatted);
 
     const updatedUser = await Usermodel.findByIdAndUpdate(
       uid,
@@ -151,14 +151,14 @@ console.log("hello")
 
     return response(res, 200, updatedUser);
   } catch (e) {
-    console.error("❌ Error updating submission:", e);
+    // console.error("❌ Error updating submission:", e);
     return error(res, 500, { error: e, message: "Updating error" });
   }
 });
 //logout
 router.post("/logout",async(req,res)=>{
     try{
-      console.log("logout route hit");
+      // console.log("logout route hit");
    res.clearCookie("jwt", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -166,7 +166,7 @@ router.post("/logout",async(req,res)=>{
       path: "/",
     });
 
-    console.log("logout route hit2");
+    // console.log("logout route hit2");
         return response(res, 200, { message: "Logged out successfully" });
 
     }catch(e){

@@ -10,7 +10,7 @@ const { authenticate, dataRateLimiter } = require('../utils/middleware');
 router.post("/",dataRateLimiter,async(req,res)=>{
 
     const dirid=req.body.dirid;
-    console.log(req.body,"notes")
+    // console.log(req.body,"notes")
     if(!dirid)return error(res,404,{message:"getting dirid"})
 
     try{
@@ -27,7 +27,7 @@ router.post("/",dataRateLimiter,async(req,res)=>{
         
     // if(!updatedir) return error(res,404,{message:"error on updating dir notes"})
    const savenotes=await notes.save();
-    console.log("notes created",savenotes)
+    // console.log("notes created",savenotes)
     return response(res,200,savenotes)
 
     }
