@@ -9,6 +9,7 @@ const notes=require("./Routes/notesroute.js")
 const upload=require("./Routes/Upload.js")
 const rateLimit = require('express-rate-limit');
 const cookieParser = require("cookie-parser");
+const compression = require("compression");
 dotenv.config();
 const cors = require("cors");
 const { loginRateLimiter, noCacheMiddleware, cacheMiddleware } = require("./utils/middleware.js");
@@ -29,11 +30,21 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+//comperssion
+app.use(compression({
+  level: 6,
+  threshold: 1024  // Only compress responses > 1KB
+}));
+
+
+
 //cache
 app.use((req, res, next) => {
   res.setHeader("Cache-Control", "public, max-age=3600");
   next();
 });
+
 
 
 app.use(cookieParser())
