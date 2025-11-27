@@ -52,8 +52,8 @@ app.use(express.json());
 
 app.use('/apii/user',noCacheMiddleware,userrouter);
 app.use('/apii/post',cacheMiddleware,postrouter);
-app.use('/apii/dir',cacheMiddleware,dirrouter);
-app.use('/apii/notes',cacheMiddleware,notes);
+app.use('/apii/dir',dirrouter);
+app.use('/apii/notes',notes);
 app.use('/apii/upcheck',noCacheMiddleware,upload)
 
 dbconnect()
