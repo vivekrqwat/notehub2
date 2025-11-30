@@ -55,6 +55,7 @@ app.use('/apii/post',cacheMiddleware,postrouter);
 app.use('/apii/dir',dirrouter);
 app.use('/apii/notes',notes);
 app.use('/apii/upcheck',noCacheMiddleware,upload)
+app.use('/apii/pdfdownlaod/',dirrouter);
 
 dbconnect()
 app.listen(8000,()=>{

@@ -1,8 +1,11 @@
 const router=require('express').Router();
 const Directorymodel = require('../models/Directory');
+const Notesmodel = require('../models/notes');
 const {error,response} = require('../utils/Error');
 const { authenticate, dataRateLimiter } = require('../utils/middleware');
-
+const PDFDocument = require('pdfkit');
+const fs = require('fs');
+const path = require('path');
 
 // create
 router.post("/",authenticate,async(req,res)=>{
@@ -179,6 +182,109 @@ router.get('/trending/top', async (req, res) => {
     return error(res, 500, { error: e, message: 'Error fetching trending directories' });
   }
 });
+
+router.get('/pdf/:id',async (req,res)=>{
+  try{
+    const userid=req.params.id
+    const notes=await Notesmodel.findById(userid);
+    console.log("notes")
+
+    if (!notes) {
+      return res.status(404).json({ error: "Notes not found" });
+    }
+    const doc=new PDFDocument();
+    
+ res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=notes_${userid}.pdf`
+    );
+
+
+    
+  const pdfDir = path.join(__dirname, "../pdf");
+    if (!fs.existsSync(pdfDir)) {
+      fs.mkdirSync(pdfDir, { recursive: true });
+    }
+
+    const filepath = path.join(pdfDir, `${userid}.pdf`);
+    console.log("PDF path:", filepath);
+    const steam=fs.createWriteStream(filepath);
+    doc.pipe(steam);
+
+    notes.content.forEach((note,index)=>{
+      doc.fontSize(20).text(`${index + 1}. ${note.heading}`, { underline: true })
+      doc.moveDown(); 
+      doc.fontSize(14).text(note.desc||" ");
+      doc.moveDown();
+
+      //,.............
+
+      //  if (note.img) {
+      //   try {
+      //     // Check if it's a URL or local path
+      //     if (note.img.startsWith('http://') || note.img.startsWith('https://')) {
+      //       // For URLs, you'd need to fetch and add them
+      //       doc.fontSize(12).text(`[Image: ${note.img}]`, { link: note.img });
+      //     } else if (fs.existsSync(note.img)) {
+      //       // For local files
+      //       doc.image(note.img, { width: 300 });
+      //     } else {
+      //       doc.fontSize(12).text('[Image not available]');
+      //     }
+      //     doc.moveDown();
+      //   } catch (e) {
+      //     console.log("Error adding image to PDF:", e);
+      //     doc.fontSize(12).text('[Error loading image]');
+      //     doc.moveDown();
+      //   }
+      // }
+
+
+
+
+      if(note.code){
+        doc.text('Code:',{underline:true});
+        doc.moveDown();
+        doc.font('Courier').fontSize(12).text(note.code);
+        doc.moveDown();
+      
+      }
+      doc.text('----------------------------------------');
+      doc.moveDown();
+
+      // if (index < notes.content.length - 1) {
+      //   doc.addPage();
+      // }
+
+      
+
+    })
+
+    doc.end();
+
+      steam.on("finish", () => {
+      res.download(filepath, "mynotes.pdf", (err) => {
+        if (err) {
+          console.error("Error sending file:", err);
+        }
+
+        // Auto-delete after sending
+        fs.unlink(filepath, (unlinkErr) => {
+          if (unlinkErr) {
+            console.error("Error deleting PDF file:", unlinkErr);
+          } else {
+            console.log("PDF file deleted:", filepath);
+          }
+        });
+      });
+    });
+
+  
+  }catch(e){
+    return error(res,500,{error:e,message:"on getting pdf"})
+  }
+})
 
 module.exports = router;
 
