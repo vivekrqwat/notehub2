@@ -14,6 +14,9 @@ dotenv.config();
 const cors = require("cors");
 const { loginRateLimiter, noCacheMiddleware, cacheMiddleware } = require("./utils/middleware.js");
 
+
+app.use(express.json({limit: '10mb'}));
+
 // CORS configuration - supports both local and production environments
 const corsOrigins = [
   "http://localhost:5173",
@@ -28,7 +31,7 @@ app.use(cors({
   origin: corsOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization','']
 }));
 
 //comperssion
@@ -48,7 +51,7 @@ app.use(compression({
 
 
 app.use(cookieParser())
-app.use(express.json());
+
 
 app.use('/apii/user',noCacheMiddleware,userrouter);
 app.use('/apii/post',cacheMiddleware,postrouter);
@@ -56,6 +59,9 @@ app.use('/apii/dir',dirrouter);
 app.use('/apii/notes',notes);
 app.use('/apii/upcheck',noCacheMiddleware,upload)
 app.use('/apii/pdfdownlaod/',dirrouter);
+app.get("/apii/health", (req, res) => {
+  res.status(200).send("OK");
+});
 
 dbconnect()
 app.listen(8000,()=>{
