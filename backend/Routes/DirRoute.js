@@ -38,7 +38,7 @@ router.get('/allone',async(req,res)=>{
     }
 })
 //get by id 
-router.get('/:id',dataRateLimiter,async(req,res)=>{
+router.get('/:id',async(req,res)=>{
     try{
        const uid=req.params.id
        console.log("dir id",uid)
@@ -281,6 +281,10 @@ router.get('/pdf/:id', async (req, res) => {
     return res.status(500).json({ error: e.message, message: "Error generating PDF" });
   }
 });
+
+
+
+
 
 module.exports = router;
 
