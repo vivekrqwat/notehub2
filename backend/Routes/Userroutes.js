@@ -10,7 +10,7 @@ const router=require('express').Router();
 router.get("/check",authenticate, async (req, res) => {
     try{
         const user=req.user;
-        if(!user)return
+        if(!user)return error(res, 404, { message: "User not found" });
         // console.log("backend user",user)
         return response(res,200,user);
     }catch(e){

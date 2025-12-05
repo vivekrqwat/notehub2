@@ -32,6 +32,8 @@ const authenticate=async (req,res,next)=>{
     const{email,id}=decode;
 // console.log("decode",id)
   const user = await Usermodel.findById(id).select("-password");
+      if (!user)
+      return error(res, 401, { message: "User does not exist" });
   req.user=user;
   console.log("user",user.id)
   next();
