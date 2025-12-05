@@ -11,7 +11,7 @@ router.get("/check",authenticate, async (req, res) => {
     try{
         const user=req.user;
         if(!user)return error(res, 404, { message: "User not found" });
-        // console.log("backend user",user)
+        console.log("backend user",user)
         return response(res,200,user);
     }catch(e){
         return error(res,400,{message:"not valid"})
