@@ -31,7 +31,7 @@ router.get('/allone',async(req,res)=>{
     try{
          console.log("get all dir req");
         const alldir=await Directorymodel.find({isPublic:true});
-       console.log("req1",alldir);
+     
         return response(res,200,alldir)
     }catch(e){
          return error(res,500,{error:e,message:"on getting dir"})
