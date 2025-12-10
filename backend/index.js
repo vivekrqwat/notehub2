@@ -53,9 +53,9 @@ app.use(compression({
 
 app.use(cookieParser())
 
-
+console.log("ew")
 app.use('/apii/user',noCacheMiddleware,userrouter);
-app.use('/apii/post',cacheMiddleware,postrouter);
+app.use('/apii/post',postrouter);
 app.use('/apii/dir',dirrouter);
 app.use('/apii/notes',notes);
 app.use('/apii/upcheck',noCacheMiddleware,upload)
