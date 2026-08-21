@@ -68,7 +68,7 @@ router.get('/all/:id',async(req,res)=>{
     const id=req.params.id
     
     try{ console.log(id,"get1")
-        const allnotes=await Notesmodel.findById(id);
+        const allnotes=await Notesmodel.findById(id).lean();
            console.log("js",allnotes);
        
        

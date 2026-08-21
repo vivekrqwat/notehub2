@@ -75,7 +75,7 @@ router.get("/:id", async (req, res) => {
   // console.log("Requested user ID:", id);
 
   try {
-    const user = await Usermodel.findById(id);
+    const user = await Usermodel.findById(id).lean();
 
     if (!user) {
       return error(res, 404, { message: "User not found" });
@@ -91,7 +91,7 @@ router.get("/:id", async (req, res) => {
 router.get('/',async (req,res)=>{
    
     try{
-        const user=await Usermodel.find();
+        const user=await Usermodel.find().lean();
           if(!user)error(res,401,"user not found");
          const safeUsers = user.map(({ _doc }) => {
             const { password, ...rest } = _doc;
