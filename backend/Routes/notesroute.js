@@ -46,6 +46,19 @@ router.get('/all',async(req,res)=>{
          return error(res,500,{error:e,message:"on getting notes"})
     }
 })
+
+//group by grade
+router.get("/group", async(req, res) => {
+    try{
+        let allnote=await Notesmodel.find();
+        console.log(allnote)
+        const allnotes = await Notesmodel.aggregate([{$group:{_id:"$grade", totalCount: { $sum: 1 },heading: { $push: '$heading' }}}]);
+        return res.status(200).json(allnotes)
+    }catch(e){
+        return res.status(500).json({error: e.message})
+    }
+})
+
 //getnotes by id
 router.get('/:id',dataRateLimiter,async(req,res)=>{
     // id is dirid
@@ -160,10 +173,6 @@ console.log('notes content', noteId, contentId);
     return res.status(500).json({ error: err.message });
   }
 })
-
-
-
-
 
 
 
