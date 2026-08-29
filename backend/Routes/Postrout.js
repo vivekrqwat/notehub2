@@ -192,7 +192,7 @@ router.get('/',async (req,res)=>{
    
     try{
         // console.log("ppost")
-        const allpost=await Postmodel.find().sort({createdAt: -1});
+        const allpost=await Postmodel.find().sort({createdAt: -1}).limit(10).lean();
         return response(res,200,allpost);
     }
     catch(e){
@@ -208,7 +208,7 @@ router.get('/:id',async (req,res)=>{
     
     console.log("post",id)
     try{
-       const post=await Postmodel.find({uid:id}).sort({createdAt: -1});
+       const post=await Postmodel.find({uid:id}).sort({createdAt: -1}).lean();
          return response(res,200,post);
 
     }
