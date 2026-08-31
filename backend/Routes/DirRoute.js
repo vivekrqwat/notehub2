@@ -18,7 +18,7 @@ router.get('/allone',AsynFuncHandler(GetAllDir))
 //get by id 
 router.get('/:id',AsynFuncHandler(GetDirBYId))
 
-// update dir
+// update dir01
 router.put("/:id",AsynFuncHandler(UpdateDirById))
 //delete
 router.delete("/:id",async(req,res)=>{
@@ -43,101 +43,101 @@ router.delete("/:id",async(req,res)=>{
 
 
 // Upvote a directory
-router.post('/upvote/:dirId', authenticate, async (req, res) => {
-  try {
-    const { dirId } = req.params;
-    const userId = req.user?._id || req.body.userId; // Get user ID from auth middleware
+// router.post('/upvote/:dirId', authenticate, async (req, res) => {
+//   try {
+//     const { dirId } = req.params;
+//     const userId = req.user?._id || req.body.userId; // Get user ID from auth middleware
 
-    if (!userId) {
-      return error(res, 401, { message: 'Please login to upvote' });
-    }
+//     if (!userId) {
+//       return error(res, 401, { message: 'Please login to upvote' });
+//     }
 
-    // Find directory
-    const directory = await Directorymodel.findById(dirId);
+//     // Find directory
+//     const directory = await Directorymodel.findById(dirId);
 
-    if (!directory) {
-      return error(res, 404, { message: 'Directory not found' });
-    }
+//     if (!directory) {
+//       return error(res, 404, { message: 'Directory not found' });
+//     }
 
-    // Initialize upvotes and upvoterIds if they don't exist
-    if (!directory.upvotes) {
-      directory.upvotes = 0;
-    }
-    if (!directory.upvoterIds) {
-      directory.upvoterIds = [];
-    }
+//     // Initialize upvotes and upvoterIds if they don't exist
+//     if (!directory.upvotes) {
+//       directory.upvotes = 0;
+//     }
+//     if (!directory.upvoterIds) {
+//       directory.upvoterIds = [];
+//     }
 
-    const userIdString = String(userId);
-    const hasUpvoted = directory.upvoterIds.some(id => String(id) === userIdString);
+//     const userIdString = String(userId);
+//     const hasUpvoted = directory.upvoterIds.some(id => String(id) === userIdString);
 
-    if (hasUpvoted) {
-      // Remove upvote
-      directory.upvoterIds = directory.upvoterIds.filter(id => String(id) !== userIdString);
-      directory.upvotes = Math.max(0, directory.upvotes - 1);
-    } else {
-      // Add upvote
-      directory.upvoterIds.push(userId);
-      directory.upvotes = (directory.upvotes || 0) + 1;
-    }
+//     if (hasUpvoted) {
+//       // Remove upvote
+//       directory.upvoterIds = directory.upvoterIds.filter(id => String(id) !== userIdString);
+//       directory.upvotes = Math.max(0, directory.upvotes - 1);
+//     } else {
+//       // Add upvote
+//       directory.upvoterIds.push(userId);
+//       directory.upvotes = (directory.upvotes || 0) + 1;
+//     }
 
-    await directory.save();
+//     await directory.save();
 
-    return response(res, 200, {
-      message: hasUpvoted ? 'Upvote removed' : 'Directory upvoted successfully',
-      upvotes: directory.upvotes,
-      hasUpvoted: !hasUpvoted
-    });
+//     return response(res, 200, {
+//       message: hasUpvoted ? 'Upvote removed' : 'Directory upvoted successfully',
+//       upvotes: directory.upvotes,
+//       hasUpvoted: !hasUpvoted
+//     });
 
-  } catch (e) {
-    console.error('Directory upvote error:', e);
-    return error(res, 500, { error: e, message: 'Error upvoting directory' });
-  }
-});
+//   } catch (e) {
+//     console.error('Directory upvote error:', e);
+//     return error(res, 500, { error: e, message: 'Error upvoting directory' });
+//   }
+// });
 
 // Get directory upvote count
-router.get('/upvotes/:dirId', async (req, res) => {
-  try {
-    const { dirId } = req.params;
-    const userId = req.user?._id;
+// router.get('/upvotes/:dirId', async (req, res) => {
+//   try {
+//     const { dirId } = req.params;
+//     const userId = req.user?._id;
 
-    const directory = await Directorymodel.findById(dirId).select('upvotes upvoterIds');
+//     const directory = await Directorymodel.findById(dirId).select('upvotes upvoterIds');
 
-    if (!directory) {
-      return error(res, 404, { message: 'Directory not found' });
-    }
+//     if (!directory) {
+//       return error(res, 404, { message: 'Directory not found' });
+//     }
 
-    const hasUpvoted = userId && directory.upvoterIds 
-      ? directory.upvoterIds.some(id => String(id) === String(userId))
-      : false;
+//     const hasUpvoted = userId && directory.upvoterIds 
+//       ? directory.upvoterIds.some(id => String(id) === String(userId))
+//       : false;
 
-    return response(res, 200, {
-      upvotes: directory.upvotes || 0,
-      hasUpvoted
-    });
+//     return response(res, 200, {
+//       upvotes: directory.upvotes || 0,
+//       hasUpvoted
+//     });
 
-  } catch (e) {
-    console.error('Get upvotes error:', e);
-    return error(res, 500, { error: e, message: 'Error fetching upvotes' });
-  }
-});
+//   } catch (e) {
+//     console.error('Get upvotes error:', e);
+//     return error(res, 500, { error: e, message: 'Error fetching upvotes' });
+//   }
+// });
 
 // Get most upvoted directories
-router.get('/trending/top', async (req, res) => {
-  try {
-    const limit = req.query.limit || 10;
+// router.get('/trending/top', async (req, res) => {
+//   try {
+//     const limit = req.query.limit || 10;
     
-    const topDirs = await Directorymodel.find({ isPublic: true })
-      .sort({ upvotes: -1 })
-      .limit(parseInt(limit))
-      .select('Dirname desc upvotes isPublic createdAt');
+//     const topDirs = await Directorymodel.find({ isPublic: true })
+//       .sort({ upvotes: -1 })
+//       .limit(parseInt(limit))
+//       .select('Dirname desc upvotes isPublic createdAt');
 
-    return response(res, 200, topDirs);
+//     return response(res, 200, topDirs);
 
-  } catch (e) {
-    console.error('Get trending error:', e);
-    return error(res, 500, { error: e, message: 'Error fetching trending directories' });
-  }
-});
+//   } catch (e) {
+//     console.error('Get trending error:', e);
+//     return error(res, 500, { error: e, message: 'Error fetching trending directories' });
+//   }
+// });
 
 
 
@@ -146,96 +146,96 @@ router.get('/trending/top', async (req, res) => {
 // In your notes.js or notes router file
 
 
-router.get('/pdf/:id', async (req, res) => {
-  try {
-    const userid = req.params.id;
-    const notes = await Notesmodel.findById(userid);
-    console.log("Generating PDF for notes:", userid);
+// router.get('/pdf/:id', async (req, res) => {
+//   try {
+//     const userid = req.params.id;
+//     const notes = await Notesmodel.findById(userid);
+//     console.log("Generating PDF for notes:", userid);
 
-    if (!notes) {
-      return res.status(404).json({ error: "Notes not found" });
-    }
+//     if (!notes) {
+//       return res.status(404).json({ error: "Notes not found" });
+//     }
     
-    const doc = new PDFDocument();
+//     const doc = new PDFDocument();
     
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename=notes_${userid}.pdf`
-    );
+//     res.setHeader("Content-Type", "application/pdf");
+//     res.setHeader(
+//       "Content-Disposition",
+//       `attachment; filename=notes_${userid}.pdf`
+//     );
 
-    const pdfDir = path.join(__dirname, "../pdf");
-    if (!fs.existsSync(pdfDir)) {
-      fs.mkdirSync(pdfDir, { recursive: true });
-    }
+//     const pdfDir = path.join(__dirname, "../pdf");
+//     if (!fs.existsSync(pdfDir)) {
+//       fs.mkdirSync(pdfDir, { recursive: true });
+//     }
 
-    const filepath = path.join(pdfDir, `${userid}.pdf`);
-    console.log("PDF path:", filepath);
-    const steam = fs.createWriteStream(filepath);
-    doc.pipe(steam);
+//     const filepath = path.join(pdfDir, `${userid}.pdf`);
+//     console.log("PDF path:", filepath);
+//     const steam = fs.createWriteStream(filepath);
+//     doc.pipe(steam);
 
-    notes.content.forEach((note, index) => {
-      doc.fontSize(20).text(`${index + 1}. ${note.heading}`, { underline: true });
-      doc.moveDown();
+//     notes.content.forEach((note, index) => {
+//       doc.fontSize(20).text(`${index + 1}. ${note.heading}`, { underline: true });
+//       doc.moveDown();
       
-      console.log("Processing note:", index + 1);
+//       console.log("Processing note:", index + 1);
       
-      const plainDesc = convert(note.desc || '', {
-  wordwrap: 80,
-  preserveNewlines: true,
-  selectors: [
-    { selector: 'ul', options: { itemPrefix: '  • ' } },
-    { selector: 'ol', options: { itemPrefix: '  ' } },
-    // REMOVE the li selector - it's handled by ul/ol
-    { selector: 'p', options: { leadingLineBreaks: 1, trailingLineBreaks: 1 } },
-    { selector: 'h1', options: { uppercase: false } },
-    { selector: 'h2', options: { uppercase: false } },
-  ]
-});
-      console.log("Converted description:", plainDesc);
+//       const plainDesc = convert(note.desc || '', {
+//   wordwrap: 80,
+//   preserveNewlines: true,
+//   selectors: [
+//     { selector: 'ul', options: { itemPrefix: '  • ' } },
+//     { selector: 'ol', options: { itemPrefix: '  ' } },
+//     // REMOVE the li selector - it's handled by ul/ol
+//     { selector: 'p', options: { leadingLineBreaks: 1, trailingLineBreaks: 1 } },
+//     { selector: 'h1', options: { uppercase: false } },
+//     { selector: 'h2', options: { uppercase: false } },
+//   ]
+// });
+//       console.log("Converted description:", plainDesc);
       
-      doc.fontSize(12).text(plainDesc);
-      doc.moveDown();
+//       doc.fontSize(12).text(plainDesc);
+//       doc.moveDown();
 
-      if (note.code) {
-        doc.text('Code:', { underline: true });
-        doc.moveDown();
-        const plainCode = convert(note.code || '', {
-          wordwrap: 100,
-          preserveNewlines: true,
-        });
-        doc.font('Courier').fontSize(10).text(plainCode);
-        doc.font('Helvetica');
-        doc.moveDown();
-      }
+//       if (note.code) {
+//         doc.text('Code:', { underline: true });
+//         doc.moveDown();
+//         const plainCode = convert(note.code || '', {
+//           wordwrap: 100,
+//           preserveNewlines: true,
+//         });
+//         doc.font('Courier').fontSize(10).text(plainCode);
+//         doc.font('Helvetica');
+//         doc.moveDown();
+//       }
       
-      doc.text('----------------------------------------');
-      doc.moveDown();
-    });
+//       doc.text('----------------------------------------');
+//       doc.moveDown();
+//     });
 
-    doc.end();
+//     doc.end();
 
-    steam.on("finish", () => {
-      res.download(filepath, "mynotes.pdf", (err) => {
-        if (err) {
-          console.error("Error sending file:", err);
-        }
+//     steam.on("finish", () => {
+//       res.download(filepath, "mynotes.pdf", (err) => {
+//         if (err) {
+//           console.error("Error sending file:", err);
+//         }
 
-        fs.unlink(filepath, (unlinkErr) => {
-          if (unlinkErr) {
-            console.error("Error deleting PDF file:", unlinkErr);
-          } else {
-            console.log("PDF file deleted:", filepath);
-          }
-        });
-      });
-    });
+//         fs.unlink(filepath, (unlinkErr) => {
+//           if (unlinkErr) {
+//             console.error("Error deleting PDF file:", unlinkErr);
+//           } else {
+//             console.log("PDF file deleted:", filepath);
+//           }
+//         });
+//       });
+//     });
 
-  } catch (e) {
-    console.error("PDF Generation Error:", e);
-    return res.status(500).json({ error: e.message, message: "Error generating PDF" });
-  }
-});
+//   } catch (e) {
+//     console.error("PDF Generation Error:", e);
+//     return res.status(500).json({ error: e.message, message: "Error generating PDF" });
+//   }
+// });
 
 
 
