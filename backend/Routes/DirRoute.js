@@ -7,64 +7,19 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 const { convert } = require('html-to-text');
+const AsynFuncHandler = require('../utils/AsyncFunctionHAndler');
+const { DirCreate,GetAllDir,GetDirBYId,UpdateDirById} = require('../Controlers/DirCon');
 
 // create
-router.post("/",authenticate,async(req,res)=>{
-  
-    try{
-        //   console.log("post dir",req.body)
-    const dir=await new Directorymodel(req.body)
- 
-    const savedir=await dir.save();
-    console.log("save created",savedir)
-   
-    return response(res,200,savedir)
-
-    }
-    catch(e){
-        return error(res,500,{error:e,message:"on creation dir"})
-    }
-})
+router.post("/",AsynFuncHandler(DirCreate))
 
 //getall
-router.get('/allone',async(req,res)=>{
-    try{
-         console.log("get all dir req");
-        const alldir=await Directorymodel.find({isPublic:true});
-     
-        return response(res,200,alldir)
-    }catch(e){
-         return error(res,500,{error:e,message:"on getting dir"})
-    }
-})
+router.get('/allone',AsynFuncHandler(GetAllDir))
 //get by id 
-router.get('/:id',async(req,res)=>{
-    try{
-       const uid=req.params.id
-       console.log("dir id",uid)
-        const alldir=await Directorymodel.find({uid:uid});
-         console.log("req");
-        return response(res,200,alldir)
-    }catch(e){
-         return error(res,500,{error:e,message:"on getting dir"})
-    }
-})
+router.get('/:id',AsynFuncHandler(GetDirBYId))
 
 // update dir
-router.put("/:id",authenticate,async(req,res)=>{
-    const {id}=req.params
-    console.log("Update request for directory ID:", id, "with data:", req.body);
-    try{
-        const updatedir= await Directorymodel.findByIdAndUpdate(id,
-             req.body,{new:true}
-        )
-             return response(res,200,updatedir)
-
-    }
-    catch(e){
-        return error(res,404,{error:e,message:"on updating dir"})
-    }
-})
+router.put("/:id",AsynFuncHandler(UpdateDirById))
 //delete
 router.delete("/:id",async(req,res)=>{
     const {id}=req.params
