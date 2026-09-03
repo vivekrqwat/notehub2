@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import EmailRouter from "./route/EmailRoute";
 import Config from "./utlis/Config";
 const {AUTH,TASKSCHEDULE}=Config
-// console.log(Config);
+console.log(AUTH);
 
 dotenv.config();
 

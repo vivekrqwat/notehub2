@@ -4,7 +4,7 @@ interface RmqInstance {
   connection: ChannelModel;
   channel: Channel;
 }
-const rabbitmqUrl = process.env.RABBITMQ_URL;
+const rabbitmqUrl = process.env.RABBITMQ_URL||"amqp://localhost:5672";
 if (!rabbitmqUrl) {
   console.warn('Warning: RABBITMQ_URL is not defined. Falling back to local instance.');
 }

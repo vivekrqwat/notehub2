@@ -24,3 +24,8 @@ export interface Task extends Document {
     taskdescription: string;
 
 }
+
+export interface EmailAuthReq{
+  email:string,
+  description:string
+}
