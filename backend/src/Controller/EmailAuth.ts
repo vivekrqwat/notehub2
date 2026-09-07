@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
-import { transporter } from "../utlis/EmailTranspoter"
-import { QueueTypeOTP,OtpProp, EmailAuthReq } from "../utlis/Interface"
-import RmqConnection from "../utlis/RMQconnection"
+
+import { QueueTypeOTP,OtpProp, EmailAuthReq } from "../utils/Interface"
+import RmqConnection from "../utils/RMQconnection"
+
 
 const EmailAuth=async(req:Request<any,any,EmailAuthReq>,res:Response)=>{
 

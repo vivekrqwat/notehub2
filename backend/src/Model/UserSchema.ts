@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { User } from "../Config/Interface";
+import { User } from "../Interfaces/Interface";
 const Schema=mongoose.Schema;
 const USER_SCHEMA=new mongoose.Schema({
     name:{
@@ -8,6 +8,7 @@ const USER_SCHEMA=new mongoose.Schema({
         password:{type:String,required:true},
         profilepic:{type:String},
         bgpic:{type:String},
+        otp:{type:String}
    
        
     

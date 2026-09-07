@@ -1,5 +1,5 @@
-import { QueueTypeOTP,OtpProp } from "../utlis/Interface";
-import RmqConnection from "../utlis/RMQconnection";
+import { QueueTypeOTP,OtpProp } from "../utils/Interface";
+import RmqConnection from "../utils/RMQconnection";
 import ConsumerFunctions from "./ConsumerFunctions";
 const Consumer= async()=>{
     try{
