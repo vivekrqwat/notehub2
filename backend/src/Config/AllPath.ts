@@ -6,7 +6,7 @@ interface AppConfig01{
 }
 
 const Config:AppConfig01=Object.freeze({
-    Login_SignUP:`${OriginalPAth}/loginuser`
+    Login_SignUP:`${OriginalPAth}loginuser`
 
 })
 

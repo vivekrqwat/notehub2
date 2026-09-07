@@ -1,7 +1,7 @@
 // ConsumerFunctions.ts
 import { Channel, ConsumeMessage } from 'amqplib';
-import { transporter } from "../utils/EmailTranspoter";
-import { OtpMessage } from "../utils/Interface";
+import { transporter } from "../utlis/EmailTranspoter";
+import { OtpMessage } from "../utlis/Interface";
 
 export const SendEmailFunc = async (channel: Channel, msg: ConsumeMessage | null): Promise<void> => {
   if (!msg) {

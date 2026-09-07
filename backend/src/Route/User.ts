@@ -4,5 +4,5 @@ import EmailAuth from "../Controller/EmailAuth";
 
 const UserRouter=express.Router()
 
-UserRouter.post("/auth",AsyncHandler(EmailAuth))
+UserRouter.post("/",AsyncHandler(EmailAuth))
 export default UserRouter
