@@ -6,5 +6,5 @@ import UserReg from "../Controller/UserController";
 const UserRouter=express.Router()
 
 UserRouter.post("/",AsyncHandler(EmailAuth))
-UserRouter.post("/reg",AsyncHandler(UserReg))
+UserRouter.post("/reg1",AsyncHandler(UserReg))
 export default UserRouter
