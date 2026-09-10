@@ -1,4 +1,4 @@
-import {Document} from "mongoose";
+import {Document, Types} from "mongoose";
 
 export interface User extends Document {
     name:string,
@@ -9,4 +9,15 @@ export interface User extends Document {
    
     createdAt:Date,
     updatedAt:Date
+}
+export interface UserData{
+    _id: Types.ObjectId; 
+     name:string,
+    email:string,
+    password:string,
+    profilepic:string,
+    bgpic:string,
+   
+  createdAt: string; // ISO Date string from JSON
+  updatedAt: string;
 }

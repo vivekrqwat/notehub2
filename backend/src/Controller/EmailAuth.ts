@@ -4,6 +4,7 @@ import { QueueTypeOTP,OtpProp, EmailAuthReq } from "../utils/Interface"
 import RmqConnection from "../utils/RMQconnection"
 
 
+
 const EmailAuth=async(req:Request<any,any,EmailAuthReq>,res:Response)=>{
 
 const {connection,channel}= await RmqConnection()
