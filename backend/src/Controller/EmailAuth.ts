@@ -5,14 +5,14 @@ import RmqConnection from "../utils/RMQconnection"
 
 
 
-const EmailAuth=async(req:Request<any,any,EmailAuthReq>,res:Response)=>{
+const CheckEmail=async(email:string,message:string)=>{
 
 const {connection,channel}= await RmqConnection()
-const {email,description}=req.body
-console.log(email,description)
+
+
 const Data={
     email:email,
-    description:description
+    description:message
 }
 
 await channel.assertQueue(QueueTypeOTP,OtpProp)
@@ -21,8 +21,8 @@ await channel.sendToQueue(QueueTypeOTP,Buffer.from(JSON.stringify(Data)))
   connection.close();
 
 }, 500);
- return  res.status(200).json({ success: true, message: "OTP queue initialized" });
+ return "otp is send successfuly"
 
 }
 
-export default EmailAuth
+export default CheckEmail

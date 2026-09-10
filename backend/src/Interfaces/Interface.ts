@@ -21,3 +21,12 @@ export interface UserData{
   createdAt: string; // ISO Date string from JSON
   updatedAt: string;
 }
+
+export interface OTP extends Document{
+   _id: Types.ObjectId ,
+   email:string
+   otp:string,
+   createdAt:Date
+
+
+}
