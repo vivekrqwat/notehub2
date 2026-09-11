@@ -30,3 +30,11 @@ export interface OTP extends Document{
 
 
 }
+export interface OTP extends Document{
+   _id: Types.ObjectId ,
+   uid:Types.ObjectId
+   name:string,
+  
+
+
+}
