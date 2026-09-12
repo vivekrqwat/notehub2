@@ -30,11 +30,19 @@ export interface OTP extends Document{
 
 
 }
-export interface OTP extends Document{
+export interface DIR extends Document{
    _id: Types.ObjectId ,
    uid:Types.ObjectId
    name:string,
   
 
 
+
 }
+
+   export interface NOTES extends Document{
+       _id: Types.ObjectId ,
+       title:string,
+       desc:string,
+       dirid:Types.ObjectId
+   }

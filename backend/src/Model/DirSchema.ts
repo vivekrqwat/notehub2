@@ -6,5 +6,6 @@ const DIR_SCHEMA=new mongoose.Schema({
     uid:{type:Schema.Types.ObjectId,ref:"User",required:true}, 
 
 })
+DIR_SCHEMA.index({ uid: 1, name: 1 });
 
 export const DirModel= mongoose.model<DIR>("DirSchema",DIR_SCHEMA)

@@ -11,8 +11,18 @@ export const CreateDir=async(req:Request,res:Response)=>{
     uid:uid
 }
         await DirModel.create(body)
-        
+
 
 
     return setResponse(res,"DirCreated",200)
+}
+export const GetDir=async(req:Request,res:Response)=>{
+    console.log("helo")
+    const{id}=req.params
+    if(!id)return setResponse(res,Messages.WrongCred,404)
+    const Dirdata=await DirModel.find({uid:id}).sort().lean();
+    if(!Dirdata)return setResponse(res,Messages.Nouser,404)
+        return setResponse(res,Dirdata,200)
+    
+
 }
