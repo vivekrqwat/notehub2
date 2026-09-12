@@ -1,5 +1,11 @@
 import {Document, Types} from "mongoose";
 
+export interface PaginationQuery {
+  page: number;
+  limit: number;
+  skip: number;
+}
+
 export interface User extends Document {
     name:string,
     email:string,

@@ -5,7 +5,7 @@ const ALLconnection=async ()=>{
 
     await DbConnect()
     app.listen(3004, () => {
-  console.log("Server is running on port 3000");
+  console.log("Server is running on port 3004");
 })
 
   }catch(e){
