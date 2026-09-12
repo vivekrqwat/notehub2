@@ -31,7 +31,7 @@ export const GetNotes=async(req:Request,res:Response)=>{
     NotesModel.find(filter).skip(skip).limit(limit).lean(),
     NotesModel.countDocuments(filter)
    ]) 
-   if(!notes) return setResponse(res,Messages.NoNOtes,200);
+   if(!notes||notes.length==0) return setResponse(res,Messages.NoNOtes,200);
    const noteObj={
     items:notes,
     pagination:{
