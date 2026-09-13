@@ -52,3 +52,13 @@ export interface DIR extends Document{
        desc:string,
        dirid:Types.ObjectId
    }
+
+   
+   export interface TASKSCHEDULE extends Document{
+    title:string,
+    desc:string,
+    email:string,
+    Date:string,
+    time:string
+    uid:Types.ObjectId
+   }
