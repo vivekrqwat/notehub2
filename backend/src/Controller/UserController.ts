@@ -1,5 +1,5 @@
 
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, request, Request, response, Response } from "express";
 import EmailAuth from "./EmailAuth";
 import UserModel from "../Model/UserSchema";
 import bcrypt from "bcryptjs";
@@ -10,6 +10,7 @@ import { configDotenv } from "dotenv";
 import dotenv from "dotenv";
 import CheckEmail from "./EmailAuth";
 import { Otpmodel } from "../Model/Otp";
+import { getPaginationOptions } from "../utils/PaginationQuery";
 
 
 export const UserReg=async(req:Request,res:Response)=>{
@@ -83,20 +84,28 @@ await Otpmodel.deleteMany({ email: email.toLowerCase() });
 export const VerifyOtp=async(req:Request,res:Response)=>{
     const {email,otp}=req.body
        if(!email)return setResponse(res,Messages.WrongCred,404)
-        const Uotp=await Otpmodel.findOne({email:email,otp:otp}).sort({ createdAt: -1 }).select('-password').lean();
+        const Uotp=await Otpmodel.findOne({email:email,otp:otp}).sort({ createdAt: -1 }).select({email:1,_id:1}).lean();
        if(!Uotp)return setResponse(res, "Invalid or expired OTP.", 400);
-        const cookieOptions={
+        const cookieOptions:any={
             httpOnly:true,
-            secure:process.env.NODE_ENV === 'production',
+            secure:false,
             sameSite:"strict",
-            maxAge: 24 * 60 * 60 * 1000, 
+            maxAge:  5*60*1000, 
         }
-        res.cookie("userinfo",Uotp,cookieOptions)
+        const user=JSON.stringify(Uotp)
+        res.cookie("userinfo",user,cookieOptions)
 
 
        await Otpmodel.deleteOne({_id:Uotp._id})
        return setResponse(res, "OTP verified successfully.", 200);
         
 
+}
+
+const getAllUser=async(req:Request,res:Response)=>{
+    const {skip,limit,page}=getPaginationOptions(req.query)
+    const UsersData=await UserModel.find().skip(skip).limit(limit)
+    if(!UsersData) return setResponse(res,[],404)
+        return setResponse(res,UsersData,404)
 }
 

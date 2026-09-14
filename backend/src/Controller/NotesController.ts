@@ -7,13 +7,14 @@ import mongoose from "mongoose";
 
 export const CreateNotes=async(req:Request,res:Response)=>{
       const { id } = req.params as { id: string };
-    const{title,desc}=req.body
+    const{title,desc,uid}=req.body
     const dirid=id;
     if(!dirid)return setResponse(res,Messages.WrongCred,404)
         const notesObj={
     title:title,
     desc:desc,
-    dirid:id
+    dirid:id,
+    uid:uid
     }
    const notesdata= await NotesModel.create(notesObj)
    return setResponse(res,notesdata,200);
@@ -89,4 +90,43 @@ const messages={
  
 }
 return setResponse(res,messages,200)
+}
+
+export const getAllNotes=async(req:Request,res:Response)=>{
+  const{dirid,uid}=req.body;
+  const allNotes= await NotesModel.aggregate(
+    [
+      {
+        $sort:{title:1}
+      },
+      {
+        $lookup:{
+          from:"dirschemas",
+          localField:"dirid",
+          foreignField:"_id",
+          as:"dir"
+        }
+      },
+     
+      {
+        $lookup:{
+          from:"users",
+          localField:"dir.uid",
+          foreignField:"_id",
+          as:"user"
+        }
+      },
+      {
+        $project:{
+          "user.password":0,
+          "user._id":0,
+          "dir._id":0,
+          "dir:uid":0
+        }
+      }
+
+      
+    ]
+  )
+  return setResponse(res,allNotes,200)
 }
