@@ -12,6 +12,7 @@ export interface User extends Document {
     password:string,
     profilepic:string,
     bgpic:string,
+    role:string
    
     createdAt:Date,
     updatedAt:Date
@@ -50,7 +51,8 @@ export interface DIR extends Document{
        _id: Types.ObjectId ,
        title:string,
        desc:string,
-       dirid:Types.ObjectId
+       dirid:Types.ObjectId,
+       uid:Types.ObjectId
    }
 
    

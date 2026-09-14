@@ -83,8 +83,17 @@ await Otpmodel.deleteMany({ email: email.toLowerCase() });
 export const VerifyOtp=async(req:Request,res:Response)=>{
     const {email,otp}=req.body
        if(!email)return setResponse(res,Messages.WrongCred,404)
-        const Uotp=await Otpmodel.findOne({email:email,otp:otp}).sort({ createdAt: -1 });
+        const Uotp=await Otpmodel.findOne({email:email,otp:otp}).sort({ createdAt: -1 }).select('-password').lean();
        if(!Uotp)return setResponse(res, "Invalid or expired OTP.", 400);
+        const cookieOptions={
+            httpOnly:true,
+            secure:process.env.NODE_ENV === 'production',
+            sameSite:"strict",
+            maxAge: 24 * 60 * 60 * 1000, 
+        }
+        res.cookie("userinfo",Uotp,cookieOptions)
+
+
        await Otpmodel.deleteOne({_id:Uotp._id})
        return setResponse(res, "OTP verified successfully.", 200);
         
