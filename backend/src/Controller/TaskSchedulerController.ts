@@ -7,9 +7,9 @@ import { QueryOptions } from "mongoose";
 
 
 export const createSchedule=async(req:Request,res:Response)=>{
-    const {title,desc,email,Date,uid}=req.body;
+    const {title,desc,email,Date,time,uid}=req.body;
     if(!uid || !email || !Date) return setResponse(res,Messages.WrongCred,404)
-        const ObjBody={title,desc,email,Date,uid}
+        const ObjBody={title,desc,email,Date,time,uid}
 
     const user=await TaskModel.create(ObjBody)
     return setResponse(res,user,200)

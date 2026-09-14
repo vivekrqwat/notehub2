@@ -2,7 +2,7 @@ import { Request, Response } from "express"
 import setResponse from "../utils/ResponseHandler"
 import Messages from "../Config/Messages"
 import { DirModel } from "../Model/DirSchema"
-import { QueryOptions } from "mongoose"
+import mongoose, { QueryOptions } from "mongoose"
 
 export const CreateDir=async(req:Request,res:Response)=>{
      console.log("hk")
@@ -48,5 +48,34 @@ export const UpdateDir=async(req:Request,res:Response)=>{
 
        return setResponse(res,updatedoc,200)
         
+
+}
+
+
+export const DeleteDirByID=async(req:Request,res:Response)=>{
+const {id}=req.params  as {id:string}
+if(!id|| !mongoose.Types.ObjectId.isValid(id))return setResponse(res,Messages.WrongCred,404)
+    const deleteDir=await DirModel.findByIdAndDelete({_id:id})
+    const message="deleted dir"
+    return setResponse(res,message,200)
+
+
+}
+
+export const DeleteAllDir=async(req:Request,res:Response)=>{
+const {id}=req.params  as {id:string}
+if(!id|| !mongoose.Types.ObjectId.isValid(id))return setResponse(res,Messages.WrongCred,404)
+    const deleteDir=await DirModel.deleteMany({_id:id})
+    
+    if(deleteDir.deletedCount==0)return setResponse(res,Messages.Nouser,404)
+
+        const messages={
+  msg:"deleted",
+  data:{
+    deletcouont:deleteDir.deletedCount
+  }
+}
+    return setResponse(res,messages,200)
+
 
 }
