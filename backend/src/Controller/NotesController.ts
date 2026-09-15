@@ -93,7 +93,7 @@ return setResponse(res,messages,200)
 }
 
 export const getAllNotes=async(req:Request,res:Response)=>{
-  const{dirid,uid}=req.body;
+
   const allNotes= await NotesModel.aggregate(
     [
       {

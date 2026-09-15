@@ -55,6 +55,14 @@ export interface DIR extends Document{
        uid:Types.ObjectId
    }
 
+   export interface Images extends Document{
+       _id: Types.ObjectId ,
+       imagename:string,
+       imageurl:string,
+       public_id:string,
+      
+       notesid:Types.ObjectId
+   }
    
    export interface TASKSCHEDULE extends Document{
     title:string,

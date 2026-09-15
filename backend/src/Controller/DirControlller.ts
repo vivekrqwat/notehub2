@@ -3,6 +3,8 @@ import setResponse from "../utils/ResponseHandler"
 import Messages from "../Config/Messages"
 import { DirModel } from "../Model/DirSchema"
 import mongoose, { QueryOptions } from "mongoose"
+import { getPaginationOptions } from "../utils/PaginationQuery"
+import { NotesModel } from "../Model/Notes"
 
 export const CreateDir=async(req:Request,res:Response)=>{
      console.log("hk")
@@ -28,6 +30,36 @@ export const GetDir=async(req:Request,res:Response)=>{
     
 
 }
+
+
+export const getSomeDir=async(req:Request,res:Response)=>{
+    const limit=10
+    const Dirdata=await DirModel.aggregate(
+        [
+            {
+                $lookup:{
+                    from:"notes",
+                    localField:"_id",
+                    foreignField:"dirid",
+                    as:"notes"
+                }
+            },
+            {
+                 $project:{
+                    "notes.dirid":0,
+
+
+            }
+            },
+            {
+                $limit:limit
+            }
+           
+        ]
+    )
+    return setResponse(res,Dirdata,200)
+}
+
 export const UpdateDir=async(req:Request,res:Response)=>{
     const {id}=req.params as {id:string}
     if(!id)return setResponse(res,Messages.WrongCred,404)
@@ -56,6 +88,7 @@ export const DeleteDirByID=async(req:Request,res:Response)=>{
 const {id}=req.params  as {id:string}
 if(!id|| !mongoose.Types.ObjectId.isValid(id))return setResponse(res,Messages.WrongCred,404)
     const deleteDir=await DirModel.findByIdAndDelete({_id:id})
+    const deletenotes=await NotesModel.findByIdAndDelete({dirid:id})
     const message="deleted dir"
     return setResponse(res,message,200)
 
