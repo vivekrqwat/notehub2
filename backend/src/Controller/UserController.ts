@@ -50,7 +50,15 @@ export const UserLogin=async(req:Request,res:Response)=>{
     if(!Match)return setResponse(res,Messages.WrongCred,404)
        const data=await UserModel.findOne({email:email}).select('-password')
         const obj={id:data?._id,email:data?.email}
+       
         const token= jwt.sign({obj},process.env.KEY,{ expiresIn: '1h' })
+        res.cookie("jwt",token,{
+            httpOnly:true,
+            secure:false,
+            sameSite:"strict",
+            maxAge:5*60*60*1000
+
+        })
 
         return res.json(token)
 

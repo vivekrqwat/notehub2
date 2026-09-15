@@ -3,8 +3,13 @@ import UserModel from "../Model/UserSchema"
 import setResponse from "../utils/ResponseHandler"
 import Messages from "../Config/Messages"
 
+
+interface AUtherizationRequest extends Request{
+    user?:any
+}
+
 export const Autherization=async(role:string)=>{
-    return (req:Request,res:Response,next:NextFunction)=>{
+    return (req:AUtherizationRequest,res:Response,next:NextFunction)=>{
       
       
         if(req.user&&req.user.role==role)next();
