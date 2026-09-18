@@ -53,36 +53,37 @@ const{Login,GETDir, Notes_Route}=ALLPATH
 
 
 
-const api={
-    login:async (email:string,passowrd:string)=>{
-        const response=axiosINstance.post<{mesages:string}>(Login,{email,passowrd})
+export const api={
+    login:async (email:string,password:string)=>{
+        const response=axiosINstance.post<{mesages:string}>(Login,{email,password})
         return (await response).data.mesages
 
     },
-    signup:async (email:string,passowrd:string)=>{
-        const response=axiosINstance.post<{messages:string}>(`signup`,{email,passowrd})
-        return (await response).data.messages
+    signup:async (email:string,password:string)=>{
+        const response=axiosINstance.post<{message:string}>(`/notehub/loginuser/reg1`,{email,password})
+        return (await response).data.message
 
     },
     getDirectories:async (uid:string,)=>{
-        const response=axiosINstance.get<{messages:ApiDirectory[]}>(`${GETDir}/${uid}`)
-        return (await response).data.messages
+        const response=await axiosINstance.get<{message:ApiDirectory[]}>(`${GETDir}/${uid}`)
+        console.log("=",response.data.message)
+        return ( response).data.message
 
     },
-    CreateDirectories:async(uid:string,name:string)=>{
-        const response =axiosINstance.post<{messages:string}>(`${GETDir}`,{uid,name})
-          return (await response).data.messages
+    CreateDirectories:async(name:string,uid:string)=>{
+        const response =axiosINstance.post<{message:string}>(`${GETDir}`,{uid:uid,name:name})
+          return (await response).data.message
     }
     ,
     getNotes:async (dirid:string,)=>{
-        const response=axiosINstance.get<{messages:ApiNote[]}>(`${ Notes_Route}/${dirid}`)
-        return (await response).data.messages
+        const response=axiosINstance.get<{message:ApiNote[]}>(`${ Notes_Route}/${dirid}`)
+        return (await response).data.message
 
     },
   
     CreateNotes:async (dirid:string,message:NotesOBJ)=>{
-        const response=axiosINstance.post<{messages:string}>(`${ Notes_Route}/${dirid}`,message)
-        return (await response).data.messages
+        const response=axiosINstance.post<{message:string}>(`${ Notes_Route}/${dirid}`,message)
+        return (await response).data.message
 
     },
      deleteNote: async (noteId: string) => {

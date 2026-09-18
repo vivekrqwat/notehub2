@@ -8,13 +8,18 @@ import { NotesModel } from "../Model/Notes";
 
 export const CreateDir = async (req: Request, res: Response) => {
   console.log("hk");
-  const { name, uid } = req.body;
+  const { uid,name } = req.body;
+   if (!mongoose.Types.ObjectId.isValid(uid)) {
+    return res.status(400).json({ error: "Invalid User/Directory ID format." });
+  }
+
   if (!name || !uid) return setResponse(res, Messages.WrongCred, 404);
   const body = {
-    name: name,
-    uid: uid,
+    name:name,
+    uid:uid,
   };
-  await DirModel.create(body);
+    console.log("name:",name,"uid",uid)
+  await DirModel.create(req.body);
 
   return setResponse(res, "DirCreated", 200);
 };
@@ -24,6 +29,7 @@ export const GetDir = async (req: Request, res: Response) => {
   if (!id) return setResponse(res, Messages.WrongCred, 404);
   const Dirdata = await DirModel.find({ uid: id }).sort().lean();
   if (!Dirdata) return setResponse(res, Messages.Nouser, 404);
+  
   return setResponse(res, Dirdata, 200);
 };
 

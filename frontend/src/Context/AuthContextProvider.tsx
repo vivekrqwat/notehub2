@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setLoading(false)
         });
       
-    },[check])
+    },[])
 
     const authenticate=async (action:Promise<any>):Promise<void>=>{
       setLoading(true);
@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
 
-
+   
 
     return (<AuthContext.Provider value={values}>
         {children}

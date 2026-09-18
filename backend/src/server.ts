@@ -8,9 +8,15 @@ import { NotesRouter } from "./Route/Notes";
 import TaskScheduleRouter from "./Route/TaskSchedule";
 import ImagesRouter from "./Route/Images";
 import { CheckandSendTask } from "./utils/CornJobs";
+import { AuthCheck, AuthenticatedRequest } from "./Midllerware/Authcheck";
+import setResponse from "./utils/ResponseHandler";
+import Messages from "./Config/Messages";
+import cookieParser from "cookie-parser";
+
 const app = express();
 dotenv.config();
 app.use(express.json());
+app.use(cookieParser());
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -38,6 +44,20 @@ app.use(Dir_Route, DirRouter);
 app.use(Notes_Route, NotesRouter);
 app.use(Task_Route, TaskScheduleRouter);
 app.use(Images_Route, ImagesRouter);
+
+app.use("/notehub/auth/me",AuthCheck,async(req:AuthenticatedRequest,res:Response)=>{
+  try{
+
+    const{id,email}=req.user.obj
+    console.log(id,email)
+    if(!id||!email) return setResponse(res,Messages.WrongCred,404)
+
+      return setResponse(res,{id:id,email:email},200)
+
+  }catch(e){
+    return setResponse(res,"NOT VALid",404)
+  }
+})
 
 app.use((req, res) => {
   res.status(404).json({

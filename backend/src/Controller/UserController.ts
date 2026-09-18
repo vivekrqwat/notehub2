@@ -12,13 +12,18 @@ import { Otpmodel } from "../Model/Otp";
 import { getPaginationOptions } from "../utils/PaginationQuery";
 
 export const UserReg = async (req: Request, res: Response) => {
+ console.log(req.body)
   const { email, password } = req.body;
-
+  console.log(email,password)
   if (!email || !password) return setResponse(res, Messages.WrongCred, 404);
+   console.log(req.body)
   const existingUser = await UserModel.findOne({ email }).lean();
   if (existingUser) {
+    console.log("user hai")
     return res.status(409).json({ message: Messages.User });
   }
+    if (!process.env.KEY) return setResponse(res, Messages.ENV, 505);
+
 
   const salt = bcrypt.genSaltSync(10);
   const hashedpassword = bcrypt.hashSync(password, salt);
@@ -26,12 +31,23 @@ export const UserReg = async (req: Request, res: Response) => {
     email: email,
     password: hashedpassword,
   };
-  const otpbody = { email: email };
+  
   const data = new UserModel(body);
+  const otpbody = { _id:data._id,email: email };
+  console.log(data)
+
 
   const savedData = await data.save();
+  console.log("datais saved")
+  const token = jwt.sign({ otpbody }, process.env.KEY, { expiresIn: "1h" });
+  res.cookie("jwt", token, {
+    httpOnly: true,
+    secure: false,
+    sameSite: "strict",
+    maxAge: 5 * 60 * 60 * 1000,
+  });
 
-  return setResponse(res, savedData, 200);
+  return setResponse(res, "saved", 200);
 };
 dotenv.config();
 
@@ -55,7 +71,7 @@ export const UserLogin = async (req: Request, res: Response) => {
     maxAge: 5 * 60 * 60 * 1000,
   });
 
-  return res.json(token);
+  return setResponse(res,"ok",200);
 };
 export const SendOtp = async (req: Request, res: Response) => {
   const { email } = req.body;

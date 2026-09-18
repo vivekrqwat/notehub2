@@ -8,7 +8,7 @@ type AuthContextValue={
     // token:string | null,
     loading:boolean,
     Error:string|null,
-    user:User,
+    user:User | null,
     login:(email:string,password:string)=>Promise<void>,
     signup:(email:string,password:string)=>Promise<void>,
     logout:()=>void
