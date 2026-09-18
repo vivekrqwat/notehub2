@@ -16,6 +16,7 @@
     "amqplib": "^2.0.1",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.11.0",
+    "cors": "^2.8.5",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-rate-limit": "^8.7.0",
@@ -27,12 +28,14 @@
   },
   "devDependencies": {
     "@types/amqplib": "^0.10.8",
+    "@types/cors": "^2.8.17",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/mongoose": "^5.11.96",
     "@types/multer": "^2.2.0",
     "@types/nodemailer": "^8.0.1",
     "nodemon": "^3.1.14",
+    "prettier": "^3.9.7",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3"
   }

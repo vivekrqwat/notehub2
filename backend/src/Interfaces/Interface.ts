@@ -1,4 +1,4 @@
-import {Document, Types} from "mongoose";
+import { Document, Types } from "mongoose";
 
 export interface PaginationQuery {
   page: number;
@@ -7,68 +7,62 @@ export interface PaginationQuery {
 }
 
 export interface User extends Document {
-    name:string,
-    email:string,
-    password:string,
-    profilepic:string,
-    bgpic:string,
-    role:string
-   
-    createdAt:Date,
-    updatedAt:Date
+  name: string;
+  email: string;
+  password: string;
+  profilepic: string;
+  bgpic: string;
+  role: string;
+
+  createdAt: Date;
+  updatedAt: Date;
 }
-export interface UserData{
-    _id: Types.ObjectId; 
-     name:string,
-    email:string,
-    password:string,
-    profilepic:string,
-    bgpic:string,
-   
+export interface UserData {
+  _id: Types.ObjectId;
+  name: string;
+  email: string;
+  password: string;
+  profilepic: string;
+  bgpic: string;
+
   createdAt: string; // ISO Date string from JSON
   updatedAt: string;
 }
 
-export interface OTP extends Document{
-   _id: Types.ObjectId ,
-   email:string
-   otp:string,
-   createdAt:Date
-
-
+export interface OTP extends Document {
+  _id: Types.ObjectId;
+  email: string;
+  otp: string;
+  createdAt: Date;
 }
-export interface DIR extends Document{
-   _id: Types.ObjectId ,
-   uid:Types.ObjectId
-   name:string,
-  
-
-
-
+export interface DIR extends Document {
+  _id: Types.ObjectId;
+  uid: Types.ObjectId;
+  name: string;
 }
 
-   export interface NOTES extends Document{
-       _id: Types.ObjectId ,
-       title:string,
-       desc:string,
-       dirid:Types.ObjectId,
-       uid:Types.ObjectId
-   }
+export interface NOTES extends Document {
+  _id: Types.ObjectId;
+  title: string;
+  desc: string;
+  dirid: Types.ObjectId;
+  uid: Types.ObjectId;
+}
 
-   export interface Images extends Document{
-       _id: Types.ObjectId ,
-       imagename:string,
-       imageurl:string,
-       public_id:string,
-      
-       notesid:Types.ObjectId
-   }
-   
-   export interface TASKSCHEDULE extends Document{
-    title:string,
-    desc:string,
-    email:string,
-    Date:string,
-    time:string
-    uid:Types.ObjectId
-   }
+export interface Images extends Document {
+  _id: Types.ObjectId;
+  imagename: string;
+  imageurl: string;
+  public_id: string;
+
+  notesid: Types.ObjectId;
+}
+
+export interface TASKSCHEDULE extends Document {
+  title: string;
+  desc: string;
+  email: string;
+  Date: string;
+  time: string;
+  uid: Types.ObjectId;
+}
