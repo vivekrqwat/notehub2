@@ -5,6 +5,8 @@ import { AuthProvider } from './Context/AuthContextProvider'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AuthPage } from './Pages/AuthPAge'
 import { HomePage } from './Pages/Home'
+import { DirectoriesPage } from './Pages/DirecteriesPage'
+import { NotesPage } from './Pages/NotesPage'
 
 
 
@@ -24,7 +26,8 @@ function App() {
 
     </Route>
     <Route path="/home" element={<HomePage></HomePage>}></Route>
-
+    <Route path="/notes/:directoryId" element={<NotesPage />}></Route>
+      
 
     </Routes>
 

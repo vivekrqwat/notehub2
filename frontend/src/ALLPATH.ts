@@ -9,7 +9,7 @@ interface AppConfig01 {
 const ALLPATH: AppConfig01 = Object.freeze({
   Login: `/notehub/loginuser/login`,
   GETDir: `/notehub/dir`,
-  Notes_Route: `notes`,
+  Notes_Route: `/notehub/notes`,
   Task_Route: `task`,
   Images_Route: `images`,
 });

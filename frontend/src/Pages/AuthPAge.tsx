@@ -12,30 +12,40 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Brand } from "../Layout/Brand"
 
 type AuthMode = "login" | "sign up"
+type LoginMethod = "password" | "otp"
 
 export const AuthPage = ({ mode }: { mode: AuthMode }) => {
   const isLogin = mode === "login"
   const navigate = useNavigate()
-  const { login, signup, loading, Error } = UseAuth()
+  const { login, signup, sendOtp, verifyOtp, loading, Error } = UseAuth()
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [name, setName] = useState("")
+  const [loginMethod, setLoginMethod] = useState<LoginMethod>("password")
+  const [otp, setOtp] = useState("")
+  const [otpSent, setOtpSent] = useState(false)
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    console.log(email,typeof password)
-
     try {
       if (isLogin) {
-        await login(email, password)
+        if (loginMethod === "otp") {
+          if (!otpSent) {
+            await sendOtp(email)
+            setOtpSent(true)
+            return
+          }
+          await verifyOtp(email, otp)
+        } else {
+          await login(email, password)
+        }
       } else {
         await signup(email, password)
       }
       navigate(isLogin ? "/home" : "/login")
     } catch (e) {
-        console.log(e)
-      alert("not verified")
+      console.log(e)
     }
   }
 
@@ -93,6 +103,40 @@ export const AuthPage = ({ mode }: { mode: AuthMode }) => {
                 : "A clear place for your best ideas."}
             </p>
 
+            {isLogin && (
+              <div className="grid grid-cols-2 gap-1 rounded-md bg-muted p-1 mb-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLoginMethod("password")
+                    setOtpSent(false)
+                    setOtp("")
+                  }}
+                  className={`rounded-sm px-3 py-2 text-sm font-medium transition-colors ${
+                    loginMethod === "password"
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Password
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLoginMethod("otp")
+                    setPassword("")
+                  }}
+                  className={`rounded-sm px-3 py-2 text-sm font-medium transition-colors ${
+                    loginMethod === "otp"
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  One-time code
+                </button>
+              </div>
+            )}
+
             <form onSubmit={submit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email address</Label>
@@ -119,17 +163,40 @@ export const AuthPage = ({ mode }: { mode: AuthMode }) => {
                 </div>
               )}
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  placeholder="Password"
-                  required
-                />
-              </div>
+              {isLogin && loginMethod === "otp" ? (
+                <div className="space-y-2">
+                  <Label htmlFor="otp">
+                    {otpSent ? "Verification code" : "One-time code"}
+                  </Label>
+                  <Input
+                    id="otp"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    value={otp}
+                    onChange={(event) => setOtp(event.target.value)}
+                    placeholder={otpSent ? "Enter the 6-digit code" : "Code will be sent to your email"}
+                    required={otpSent}
+                    disabled={!otpSent}
+                  />
+                  {otpSent && (
+                    <p className="text-xs text-muted-foreground">
+                      Check your email for the code.
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    placeholder="Password"
+                    required
+                  />
+                </div>
+              )}
 
               {Error && (
                 <p className="text-sm text-destructive font-medium">
@@ -140,6 +207,10 @@ export const AuthPage = ({ mode }: { mode: AuthMode }) => {
               <Button type="submit" disabled={loading} className="w-full">
                 {loading
                   ? "Please wait..."
+                  : isLogin && loginMethod === "otp"
+                    ? otpSent
+                      ? "Verify code"
+                      : "Send code"
                   : isLogin
                     ? "Continue to workspace"
                     : "Create my workspace"}

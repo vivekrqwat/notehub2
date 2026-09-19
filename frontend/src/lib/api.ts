@@ -27,6 +27,16 @@ export type ApiNote = {
   uid: string;
 };
 
+export type NotesPageResponse = {
+  items: ApiNote[];
+  pagination: {
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+    limit: number;
+  };
+};
+
 
 // async function  Request<T>(path:string,options:RequestInit={},token?:string){
 
@@ -44,12 +54,7 @@ export type ApiNote = {
 
 // }
 const{Login,GETDir, Notes_Route}=ALLPATH
-  interface NotesOBJ{
-    tiite:string,
-    desc:string,
-  
-    uid:string
-  }
+    
 
 
 
@@ -75,17 +80,26 @@ export const api={
           return (await response).data.message
     }
     ,
-    getNotes:async (dirid:string,)=>{
-        const response=axiosINstance.get<{message:ApiNote[]}>(`${ Notes_Route}/${dirid}`)
-        return (await response).data.message
+    getNotes:async (dirid:string,page:string)=>{
+      const response=await axiosINstance.get<{message: NotesPageResponse | ApiNote[]}>(`${ Notes_Route}/${dirid}?page=${page}&limit=10`)
+      const message = response.data.message;
+      return Array.isArray(message)
+        ? { items: message, pagination: { totalItems: message.length, totalPages: 1, currentPage: Number(page), limit: 10 } }
+        : message;
 
     },
   
-    CreateNotes:async (dirid:string,message:NotesOBJ)=>{
-        const response=axiosINstance.post<{message:string}>(`${ Notes_Route}/${dirid}`,message)
-        return (await response).data.message
+    CreateNotes:async (dirid:string,message:Pick<ApiNote, "title" | "desc" | "uid">,)=>{
+        const response=await axiosINstance.post<{message:ApiNote}>(`/notehub/notes/${dirid}`,message)
+        console.log("notes",response.data)
+        return ( response).data.message
 
     },
+    EditNotes:async(noteid:string,message:Pick<ApiNote, "title" | "desc" | "uid">)=>{
+      const response=await axiosINstance.put(`/notehub/notes/${noteid}`,message)
+      return response.data.message
+    }
+    ,
      deleteNote: async (noteId: string) => {
     const response = await axiosINstance.delete<{ message: string }>(`/notehub/notes/${noteId}`, {
       data: { id: noteId }
@@ -94,6 +108,14 @@ export const api={
   },
   authCheck:async()=>{
     const response=await axiosINstance.get<{message:User}>(`/notehub/auth/me`)
+    return response.data.message
+  },
+  SendOtp:async(email:string)=>{
+    const response=await axiosINstance.post<{message:string}>("/notehub/loginuser/otp-handler",{email})
+    return response.data.message
+  },
+  VerifyOtp:async(email:string,otp:string)=>{
+    const response=await axiosINstance.post<{message:string}>("/notehub/loginuser/verify",{email,otp})
     return response.data.message
   }
 
@@ -106,7 +128,7 @@ function asArray<T>(value:T[]| undefined):T[]{
 export const dataApi={
     ... api,
     getDirectories:async (userid:string)=>asArray(await api.getDirectories(userid)),
-    getNotes:async (dirid:string)=>asArray(await api.getNotes(dirid)),
+    getNotes:async (dirid:string, page:string)=>api.getNotes(dirid, page),
 
 }
 

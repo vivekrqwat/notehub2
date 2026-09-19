@@ -52,7 +52,7 @@ export const UserReg = async (req: Request, res: Response) => {
 dotenv.config();
 
 export const UserLogin = async (req: Request, res: Response) => {
-  console.log("kl");
+  console.log("userlogin");
   if (!process.env.KEY) return setResponse(res, Messages.ENV, 505);
   const { email, password } = req.body;
   if (!email || !password) return res.json({ message: Messages.WrongCred });
@@ -63,14 +63,14 @@ export const UserLogin = async (req: Request, res: Response) => {
   const data = await UserModel.findOne({ email: email }).select("-password");
   const obj = { id: data?._id, email: data?.email };
 
-  const token = jwt.sign({ obj }, process.env.KEY, { expiresIn: "1h" });
+  const token = jwt.sign( obj , process.env.KEY, { expiresIn: "1h" });
   res.cookie("jwt", token, {
     httpOnly: true,
     secure: false,
     sameSite: "strict",
     maxAge: 5 * 60 * 60 * 1000,
   });
-
+console.log("jwt",token)
   return setResponse(res,"ok",200);
 };
 export const SendOtp = async (req: Request, res: Response) => {
@@ -108,8 +108,18 @@ export const VerifyOtp = async (req: Request, res: Response) => {
     sameSite: "strict",
     maxAge: 5 * 60 * 1000,
   };
-  const user = JSON.stringify(Uotp);
-  res.cookie("userinfo", user, cookieOptions);
+      if (!process.env.KEY) return setResponse(res, Messages.ENV, 505);
+   
+  const user={id:Uotp._id,email:Uotp.email}
+   const token = jwt.sign( user , process.env.KEY, { expiresIn: "1h" });
+   console.log("otp",token,user)
+  res.cookie("jwt", token, {
+    httpOnly: true,
+    secure: false,
+    sameSite: "strict",
+    maxAge: 5 * 60 * 60 * 1000,
+  });
+ 
 
   await Otpmodel.deleteOne({ _id: Uotp._id });
   return setResponse(res, "OTP verified successfully.", 200);

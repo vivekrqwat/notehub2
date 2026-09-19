@@ -23,8 +23,7 @@ export const UseWorkspace=()=>{
       const notes = useWorkspaceStore((state) => state.notes);
     const directoriesFromStore=useWorkspaceStore((state)=>(state.directories))
     const loadDirectories=useWorkspaceStore((state)=>(state.loadDirectories))
-      const loadNotes = useWorkspaceStore((state) => state.loadNotes);
-  const addDirectoryToStore = useWorkspaceStore((state) => state.addDirectory);
+    const addDirectoryToStore = useWorkspaceStore((state) => state.addDirectory);
     const loading = useWorkspaceStore((state) => state.loading);
   const error = useWorkspaceStore((state) => state.error);
     const [search, setSearch] = useState("");
@@ -39,7 +38,7 @@ export const UseWorkspace=()=>{
     }
 
 
-  },[loadDirectories,loadNotes,user?.id])
+  },[loadDirectories,user?.id])
 
 
     const directories = directoriesFromStore.map((directory, index) => ({
@@ -66,6 +65,8 @@ export const UseWorkspace=()=>{
   );
 
 
+ 
+
   return{
     loading,
     error,
@@ -73,8 +74,11 @@ export const UseWorkspace=()=>{
     directories,
     loadDirectories,
     addDirectory,
+  
     filteredDirectories,
     totalNotes: notes.length,
+    setSearch,
+    search
   }
     
 }

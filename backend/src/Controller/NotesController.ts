@@ -4,11 +4,15 @@ import Messages from "../Config/Messages";
 import { NotesModel } from "../Model/Notes";
 import { getPaginationOptions } from "../utils/PaginationQuery";
 import mongoose from "mongoose";
+import { CheckForTypeId } from "../utils/CheckforTypeId";
+import { QueryOptions } from "mongoose";
 
 export const CreateNotes = async (req: Request, res: Response) => {
   const { id } = req.params as { id: string };
+    console.log("notes:")
   const { title, desc, uid } = req.body;
   const dirid = id;
+
   if (!dirid) return setResponse(res, Messages.WrongCred, 404);
   const notesObj = {
     title: title,
@@ -16,6 +20,7 @@ export const CreateNotes = async (req: Request, res: Response) => {
     dirid: id,
     uid: uid,
   };
+  console.log(notesObj)
   const notesdata = await NotesModel.create(notesObj);
   return setResponse(res, notesdata, 200);
 };
@@ -25,13 +30,12 @@ export const GetNotes = async (req: Request, res: Response) => {
   const { page, limit, skip } = getPaginationOptions(req.query);
 
   const filter = { dirid: id };
+  
 
   const [notes, totalnotes] = await Promise.all([
     NotesModel.find(filter).skip(skip).limit(limit).lean(),
     NotesModel.countDocuments(filter),
   ]);
-  if (!notes || notes.length == 0)
-    return setResponse(res, Messages.NoNOtes, 200);
   const noteObj = {
     items: notes,
     pagination: {
@@ -42,7 +46,7 @@ export const GetNotes = async (req: Request, res: Response) => {
     },
   };
 
-  return setResponse(res, notes, 200);
+  return setResponse(res, noteObj, 200);
 };
 
 export const DeletAllNOtes = async (req: Request, res: Response) => {
@@ -113,3 +117,30 @@ export const getAllNotes = async (req: Request, res: Response) => {
   ]);
   return setResponse(res, allNotes, 200);
 };
+
+export const UpdateNotes=async (req:Request,res:Response)=>{
+  const {id}=req.params as {id:string};
+  
+  if(!CheckForTypeId(id))return setResponse(res,Messages.WrongCred,404)
+    const updateData=await NotesModel.findById({_id:id}).lean();
+  if(!updateData)return setResponse(res,Messages.WrongCred,404);
+  const {title,desc}=req.body
+  console.log("updatenotes",title,desc)
+  const update={
+    $set:{
+    title:title,
+    desc:desc
+    }
+  }
+  const option: QueryOptions = {
+      returnDocument: "after",
+      runValidators: true,
+    };
+
+    const updateNOtes=await NotesModel.findByIdAndUpdate({_id:id},update,option)
+    console.log("updated",updateNOtes)
+    return setResponse(res,updateNOtes,200)
+
+
+
+}

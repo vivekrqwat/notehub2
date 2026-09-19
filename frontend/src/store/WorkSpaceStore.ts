@@ -1,25 +1,28 @@
 import { create } from "zustand";
-import { api, dataApi, type ApiDirectory, type ApiNote } from "../lib/api";
+import { api, dataApi, type ApiDirectory, type ApiNote, type NotesPageResponse } from "../lib/api";
 
 type WorkspaceState = {
   directories: ApiDirectory[];
   notes: ApiNote[];
+  notesPagination: NotesPageResponse["pagination"] | null;
   loading: boolean;
   error: string | null;
   loadDirectories: (userId: string) => Promise<void>;
-  loadNotes: (directoryId?: string) => Promise<void>;
+  loadNotes: (directoryId: string, page: string) => Promise<void>;
   addDirectory: (name: string, userId: string) => Promise<void>;
   addNote: (
     directoryId: string,
     note: Pick<ApiNote, "title" | "desc" | "uid">,
-    token: string,
   ) => Promise<void>;
   removeNote: (noteId: string, token: string) => Promise<void>;
+  EditNotes:(noteId:string,message:ApiNote)=>Promise<void>
+
 };
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({
   directories: [],
   notes: [],
+  notesPagination: null,
   loading: false,
   error: null,
   loadDirectories: async (userId) => {
@@ -37,15 +40,11 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
       });
     }
   },
-  loadNotes: async (directoryId) => {
+  loadNotes: async (directoryId,page) => {
     set({ loading: true, error: null });
     try {
-      set({
-        notes: 
-           await dataApi.getNotes(directoryId)
-          ,
-        loading: false,
-      });
+      const result = await dataApi.getNotes(directoryId, page);
+      set({ notes: result.items, notesPagination: result.pagination, loading: false });
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : "Could not load notes",
@@ -67,7 +66,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
       throw error;
     }
   },
-  addNote: async (directoryId, note, token) => {
+  addNote: async (directoryId, note) => {
     set({ loading: true, error: null });
 
     try {
@@ -84,10 +83,33 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
       throw error;
     }
   },
-  removeNote: async (noteId, token) => {
-    await api.deleteNote(noteId, token);
+  removeNote: async (noteId) => {
+    await api.deleteNote(noteId);
     set((state) => ({
       notes: state.notes.filter((note) => note._id !== noteId),
     }));
   },
+  EditNotes:async(noteId:string,message)=>{
+    try{
+     const updatednote= await dataApi.EditNotes(noteId,message)
+     set((state)=>({
+      notes: state.notes.map((note) => note._id === noteId ? updatednote : note),
+      loading: false,
+     }))
+    }catch(error){
+      set({
+        error: error instanceof Error ? error.message : "Could not create note",
+        loading: false,
+      });
+      throw error;
+      
+    }
+    
+  }
+
+
+
+
+
+
 }));

@@ -22,6 +22,7 @@ export const AuthCheck = async (
   res: Response,
   next: NextFunction,
 ) => {
+  console.log("kll")
   try {
     // 1. Extract the token directly from the cookies object
     const token = req.cookies?.jwt;

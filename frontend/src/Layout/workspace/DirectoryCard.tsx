@@ -9,10 +9,10 @@ export function DirectoryCard({ directory }: { directory: Directory }) {
   return (
     <article
       className={`directory-card card-${directory.accent}`}
-      onClick={() => navigate(`/notes?dirid=${directory._id}`)}
+      onClick={() => navigate(`/notes/${directory._id}`)}
       onKeyDown={(event) => {
         if (event.key === "Enter") {
-          navigate(`/notes?dirid=${directory._id}`);
+          navigate(`/notes/${directory._id}`);
         }
       }}
       role="link"

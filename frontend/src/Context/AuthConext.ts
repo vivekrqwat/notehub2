@@ -11,6 +11,8 @@ type AuthContextValue={
     user:User | null,
     login:(email:string,password:string)=>Promise<void>,
     signup:(email:string,password:string)=>Promise<void>,
-    logout:()=>void
+    logout:()=>void,
+    sendOtp:(email:string)=>Promise<void>,
+    verifyOtp:(email:string,otp:string)=>Promise<void>
 }
 export const AuthContext=createContext<AuthContextValue| null>(null)

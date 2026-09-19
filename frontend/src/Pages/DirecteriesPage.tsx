@@ -1,12 +1,13 @@
 import { ChevronDown, FolderPlus, Search } from "lucide-react";
 import { useState } from "react";
-import { Button } from "../components/ui/button";
-import { CreateItemDialog } from "../components/workspace/CreateItemDialog";
-import { DirectoryCard } from "../components/workspace/DirectoryCard";
-import { useWorkspace } from "../hooks/useWorkspace";
+import { UseWorkspace } from "../Hooks/UseWorkspace";
+import { DirectoryCard } from "../Layout/workspace/DirectoryCard";
+import { CreateItemDialog } from "../Layout/workspace/CreateItemDialog";
+import { Button } from "../Components/ui/button";
+
 
 export function DirectoriesPage() {
-  const workspace = useWorkspace();
+  const workspace = UseWorkspace();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
