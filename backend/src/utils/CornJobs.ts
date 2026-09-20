@@ -18,7 +18,7 @@ const SetTask = async () => {
     }).format(Date.now());
     console.log(date);
     const task = await TaskModel.find({ Date: date }).lean();
-    console.log(task)
+    console.log()
 
     // if(task.length>0){
     //         const now=new Date();
