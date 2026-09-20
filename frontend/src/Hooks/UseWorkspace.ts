@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { UseAuth } from "../Context/Useauth"
 import { useWorkspaceStore } from "../store/WorkSpaceStore";
+import type { Task as ApiTask } from "../lib/api";
 
 export type Directory = {
   _id: string;
@@ -12,7 +13,9 @@ export type Directory = {
 };
 
 export type Task = {
+  _id?: string;
   title: string;
+  desc: string;
   date: string;
   time: string;
   color: "lime" | "sky" | "peach";
@@ -26,19 +29,22 @@ export const UseWorkspace=()=>{
     const addDirectoryToStore = useWorkspaceStore((state) => state.addDirectory);
     const loading = useWorkspaceStore((state) => state.loading);
   const error = useWorkspaceStore((state) => state.error);
+  const deleteDir=useWorkspaceStore((state)=>(state.DeleteDir))
     const [search, setSearch] = useState("");
-  const [tasks, setTasks] = useState();
+  const tasks = useWorkspaceStore((state) => state.tasks);
+  const loadTasks = useWorkspaceStore((state) => state.loadTasks);
+  const addTaskToStore = useWorkspaceStore((state) => state.addTask);
 
     console.log(user,"useworkspace")
   useEffect(()=>{
     if (user?.id) {
         console.log("user",user.id)
       void loadDirectories(user.id);
-      console.log("loading",directories)
+      void loadTasks(user.id);
     }
 
 
-  },[loadDirectories,user?.id])
+  },[loadDirectories, loadTasks, user?.id])
 
 
     const directories = directoriesFromStore.map((directory, index) => ({
@@ -64,6 +70,10 @@ export const UseWorkspace=()=>{
     [directories, search],
   );
 
+  const addTask = async (task: Omit<ApiTask, "_id">) => {
+    await addTaskToStore(task);
+  };
+
 
  
 
@@ -74,11 +84,14 @@ export const UseWorkspace=()=>{
     directories,
     loadDirectories,
     addDirectory,
+    deleteDir,
   
     filteredDirectories,
     totalNotes: notes.length,
     setSearch,
     search
+    ,tasks
+    ,addTask
   }
     
 }

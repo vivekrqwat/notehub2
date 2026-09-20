@@ -8,6 +8,7 @@ import { Button } from "../Components/ui/button";
 import { DirectoryCard } from "../Layout/workspace/DirectoryCard";
 // import { TaskRow } from "../Layout/workspace/TaskRow";
 import { CreateItemDialog } from "../Layout/workspace/CreateItemDialog";
+import { ReminderSidebar } from "../Layout/workspace/ReminderSidebar";
 import { UseAuth } from "../Context/Useauth";
 
 export function HomePage() {
@@ -112,31 +113,7 @@ export function HomePage() {
             </button>
           </div>
         </div>
-        <div className="section-block notes-block">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">Coming up</p>
-              <h2>
-                {/* Next tasks <span>{workspace.tasks.length}</span> */}
-              </h2>
-            </div>
-            <Link className="text-button" to="/tasks">
-              Calendar <ArrowRight size={16} />
-            </Link>
-          </div>
-          {/* <div className="task-list">
-            {workspace.tasks.slice(0, 3).map((task, index) => (
-              <TaskRow
-                key={task.title}
-                task={task}
-                onToggle={() => workspace.toggleTask(index)}
-              />
-            ))}
-          </div> */}
-          <button className="add-task-button" onClick={() => setDialog("task")}>
-            <Plus size={16} /> Add a reminder
-          </button>
-        </div>
+        <ReminderSidebar />
       </section>
       <CreateItemDialog
         kind={dialog ?? "note"}

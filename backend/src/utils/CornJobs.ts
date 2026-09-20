@@ -5,7 +5,7 @@ import { DeleteTask } from "../Controller/TaskSchedulerController";
 import { Mongoose } from "mongoose";
 import CheckEmail from "../Controller/EmailAuth";
 export const CheckandSendTask = () => {
-  cron.schedule(" 0 1 * * * ", SetTask);
+  cron.schedule(" * * * * * ", SetTask);
 };
 
 const SetTask = async () => {
@@ -18,6 +18,7 @@ const SetTask = async () => {
     }).format(Date.now());
     console.log(date);
     const task = await TaskModel.find({ Date: date }).lean();
+    console.log(task)
 
     // if(task.length>0){
     //         const now=new Date();

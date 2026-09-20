@@ -17,12 +17,12 @@ export const GetSchedule = async (req: Request, res: Response) => {
   const { id } = req.params as { id: string };
   const { page, skip, limit } = getPaginationOptions(req.query);
 
-  const data = await TaskModel.find({ _id: id })
+  const data = await TaskModel.find({ uid: id })
     .skip(skip)
     .limit(limit)
     .sort()
     .lean();
-  if (!data) setResponse(res, Messages.NoNOtes, 404);
+  if (!data) return setResponse(res, Messages.NoNOtes, 404);
   return setResponse(res, data, 200);
 };
 export const EditSchedule = async (req: Request, res: Response) => {
@@ -51,6 +51,6 @@ export const DeleteTask = async (req: Request, res: Response) => {
   const data = await TaskModel.find({ _id: id }).lean();
   if (!data) return setResponse(res, Messages.Nouser, 404);
 
-  const deleted = await TaskModel.findByIdAndDelete({ _id: id });
-  return setResponse(res, deleted, 404);
+  const deleted = await TaskModel.findByIdAndDelete({ _id: id }).lean();
+  return setResponse(res, "deleted", 404);
 };

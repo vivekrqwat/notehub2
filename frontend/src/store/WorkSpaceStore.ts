@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { api, dataApi, type ApiDirectory, type ApiNote, type NotesPageResponse } from "../lib/api";
+import { api, dataApi, type ApiDirectory, type ApiNote, type NotesPageResponse, type Task } from "../lib/api";
 
 type WorkspaceState = {
   directories: ApiDirectory[];
@@ -15,7 +15,11 @@ type WorkspaceState = {
     note: Pick<ApiNote, "title" | "desc" | "uid">,
   ) => Promise<void>;
   removeNote: (noteId: string, token: string) => Promise<void>;
-  EditNotes:(noteId:string,message:ApiNote)=>Promise<void>
+  EditNotes:(noteId:string,message:ApiNote)=>Promise<void>,
+  DeleteDir:(dirid:string)=>Promise<void>,
+  tasks: Task[];
+  loadTasks: (userId: string, page?: string) => Promise<void>;
+  addTask: (task: Omit<Task, "_id">) => Promise<void>;
 
 };
 
@@ -25,6 +29,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
   notesPagination: null,
   loading: false,
   error: null,
+  tasks: [],
   loadDirectories: async (userId) => {
     set({ loading: true, error: null });
     try {
@@ -88,6 +93,32 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
     set((state) => ({
       notes: state.notes.filter((note) => note._id !== noteId),
     }));
+  },
+  DeleteDir:async(dirid)=>{
+   
+      await dataApi.deleteDir(dirid)
+    set((state)=>({
+      directories:state.directories.filter((dir)=>dir._id !==dirid),
+    }))
+
+   
+  },
+  loadTasks: async (userId, page = "1") => {
+    try {
+      const tasks = await api.GetTask(userId, page, "50");
+      set({ tasks });
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : "Could not load reminders" });
+    }
+  },
+  addTask: async (task) => {
+    try {
+      const created = await api.CreateTask(task);
+      set((state) => ({ tasks: [created, ...state.tasks] }));
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : "Could not create reminder" });
+      throw error;
+    }
   },
   EditNotes:async(noteId:string,message)=>{
     try{

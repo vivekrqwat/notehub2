@@ -87,7 +87,7 @@ export const DeleteDirByID = async (req: Request, res: Response) => {
   if (!id || !mongoose.Types.ObjectId.isValid(id))
     return setResponse(res, Messages.WrongCred, 404);
   const deleteDir = await DirModel.findByIdAndDelete({ _id: id });
-  const deletenotes = await NotesModel.findByIdAndDelete({ dirid: id });
+  const deletenotes = await NotesModel.deleteMany({ dirid: id });
   const message = "deleted dir";
   return setResponse(res, message, 200);
 };

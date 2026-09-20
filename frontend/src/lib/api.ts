@@ -18,6 +18,15 @@ export type ApiDirectory = {
   name: string;
   uid: string;
 };
+export type Task = {
+  _id?: string;
+  title: string;
+  desc: string;
+  email: string;
+  Date: string;
+  time: string;
+  uid: string;
+};
 
 export type ApiNote = {
   _id: string;
@@ -106,6 +115,11 @@ export const api={
     });
     return response.data.message;
   },
+  deleteDir:async(dirid:string)=>{
+    const response =await axiosINstance.delete<{message:string}>(`/notehub/dir/${dirid}`);
+      return response.data.message
+  }
+  ,
   authCheck:async()=>{
     const response=await axiosINstance.get<{message:User}>(`/notehub/auth/me`)
     return response.data.message
@@ -117,7 +131,24 @@ export const api={
   VerifyOtp:async(email:string,otp:string)=>{
     const response=await axiosINstance.post<{message:string}>("/notehub/loginuser/verify",{email,otp})
     return response.data.message
+  },
+  GetTask:async(userid:string,page:string,limit:string)=>{
+    const response=await axiosINstance.get<{message:Task[]}>(`/notehub/task/${userid}?page=${page}&limit=${limit}`)
+    return response.data.message
+  },
+  CreateTask:async(message:Omit<Task, "_id">)=>{
+    const response=await axiosINstance.post<{message:Task}>(`/notehub/task/`,message)
+    return response.data.message
+  },
+  EditTask:async(message:Task)=>{
+    const response=await axiosINstance.put<{message:Task}>(`/notehub/task/`,message)
+     return response.data.message
+  },
+  DeleteTask:async(taskid:string)=>{
+    const response=await axiosINstance.delete<{message:string}>(`/notehub/task/${taskid}`)
+    return response.data.message
   }
+
 
 }
 

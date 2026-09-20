@@ -15,7 +15,7 @@ DirRouter.post("/", AuthCheck, AsyncHandler(CreateDir));
 DirRouter.get("/:id", AsyncHandler(GetDir));
 DirRouter.put("/:id", AuthCheck, AsyncHandler(UpdateDir));
 DirRouter.get("/", AsyncHandler(getSomeDir));
-DirRouter.delete("/:id", AuthCheck, AsyncHandler(DeleteDirByID));
+DirRouter.delete("/:id", AsyncHandler(DeleteDirByID));
 DirRouter.delete("/", AuthCheck, AsyncHandler(DeleteAllDir));
 
 export default DirRouter;
