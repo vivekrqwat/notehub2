@@ -1,7 +1,6 @@
 import {  useEffect, useMemo, useState, type ReactNode } from "react";
 import { AuthContext, type User } from "./AuthConext";
 import { dataApi } from "../lib/api";
-import { data } from "react-router-dom";
 
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {

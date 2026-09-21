@@ -4,14 +4,14 @@ interface RmqInstance {
   connection: ChannelModel;
   channel: Channel;
 }
-const rabbitmqUrl = process.env.RABBITMQ_URL || "amqp://localhost:5672";
+const rabbitmqUrl = process.env.RABBITMQ_URL || 'amqp://guest:guest@my-rabbitmq:5672';
 if (!rabbitmqUrl) {
   console.warn(
     "Warning: RABBITMQ_URL is not defined. Falling back to local instance.",
   );
 }
 
-const RmqUri = rabbitmqUrl || "amqp://localhost";
+const RmqUri = rabbitmqUrl || "'amqp://guest:guest@my-rabbitmq:5672'";
 const RmqConnection = async (): Promise<RmqInstance> => {
   try {
     if (!RmqUri) {

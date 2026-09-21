@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Button } from "../../Components/ui/button";
 import { Dialog } from "../../Components/ui/dialog";
 import { Input } from "../../Components/ui/input";
-import { UseAuth } from "../../Context/Useauth";
 
 type Kind = "directory" | "task" | "note";
 const copy: Record<Kind, [string, string, string]> = {
@@ -36,7 +35,6 @@ export function CreateItemDialog({
   onCreate: (value: string) => void;
 }) {
   const [value, setValue] = useState("");
-  const {user}=UseAuth()
   const [heading, description, placeholder] = copy[kind];
   const submit = () => {
     if (!value.trim()) return;

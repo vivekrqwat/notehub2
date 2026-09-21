@@ -3,13 +3,17 @@ import { UseAuth } from "../Context/Useauth"
 import { useState, type FormEvent } from "react"
 import { ArrowRight, Check, Quote } from "lucide-react"
 
-import { Button } from "@/Components/ui/BUtton"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent } from "@/components/ui/card"
+
+
+// import { Label } from "@/components/ui/label"
+// import { Card, CardContent } from "@/components/ui/card"
 
 // Replace with your actual Brand component/import
 import { Brand } from "../Layout/Brand"
+import { Button } from "../Components/ui/button"
+import { Input } from "../Components/ui/input"
+import { Card, CardContent } from "../Components/ui/card"
+import { Label } from "../Components/ui/label"
 
 type AuthMode = "login" | "sign up"
 type LoginMethod = "password" | "otp"

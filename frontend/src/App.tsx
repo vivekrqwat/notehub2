@@ -1,18 +1,13 @@
-import { useState } from 'react'
-
 import './App.css'
 import { AuthProvider } from './Context/AuthContextProvider'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AuthPage } from './Pages/AuthPAge'
 import { HomePage } from './Pages/Home'
-import { DirectoriesPage } from './Pages/DirecteriesPage'
 import { NotesPage } from './Pages/NotesPage'
 
 
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <AuthProvider>
      <BrowserRouter>

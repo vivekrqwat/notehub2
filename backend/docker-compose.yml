@@ -1,0 +1,27 @@
+version: '3.9'
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+       - "5672:5672"   # RabbitMQ broker port
+       - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq # RabbitMQ Management Dashboard
+  api-server:
+    build: .
+    command: npm run dev
+    ports:
+       - "3004:3004"
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+  emailservic:
+    build: .
+    command: npm run worker
+    depends_on:
+       - rabbitmq
+    environment:
+       - RABBITMQ_URL=amqp://rabbitmq:5672
+volumes:
+  rabbitmq_data:
