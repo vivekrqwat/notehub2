@@ -1,6 +1,9 @@
-import { ArrowLeft, CalendarDays, Check, Copy, FileText, List, Pencil, Plus, Search, Trash2, X } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeft, Bold, CalendarDays, Check, Code2, Copy, FileText, Heading2, Italic, List, ListOrdered, Minus, Pencil, Plus, Redo2, RemoveFormatting, Search, Strikethrough, Trash2, Undo2, X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Placeholder from "@tiptap/extension-placeholder";
 import { UseWorkspace } from "../Hooks/UseWorkspace";
 import { UseAuth } from "../Context/Useauth";
 import { useWorkspaceStore } from "../store/WorkSpaceStore";
@@ -22,7 +25,7 @@ function escapeHtml(value: string) {
 function sanitizeRichText(value: string) {
 	if (!value.includes("<")) return escapeHtml(value).replace(/\n/g, "<br />");
 	const document = new DOMParser().parseFromString(value, "text/html");
-	const allowed = new Set(["B", "STRONG", "I", "EM", "U", "S", "BR", "P", "DIV", "UL", "OL", "LI", "BLOCKQUOTE", "PRE", "CODE", "SPAN"]);
+	const allowed = new Set(["B", "STRONG", "I", "EM", "U", "S", "BR", "P", "DIV", "H1", "H2", "H3", "UL", "OL", "LI", "BLOCKQUOTE", "PRE", "CODE", "SPAN"]);
 	const allowedStyles = new Set(["font-family", "font-size", "font-weight", "font-style", "text-decoration", "color", "background-color", "white-space", "text-align"]);
 	document.body.querySelectorAll("*").forEach((element) => {
 		if (!allowed.has(element.tagName)) {
@@ -50,16 +53,50 @@ function richTextToPlainText(value: string) {
 }
 
 function RichTextEditor({ value, onChange, ariaLabel }: { value: string; onChange: (value: string) => void; ariaLabel: string }) {
+	const editor = useEditor({
+		extensions: [
+			StarterKit.configure({
+				heading: { levels: [1, 2, 3] },
+			}),
+			Placeholder.configure({ placeholder: "Write something worth remembering..." }),
+		],
+		content: sanitizeRichText(value),
+		onUpdate: ({ editor: nextEditor }) => onChange(nextEditor.getHTML()),
+	});
+
+	useEffect(() => {
+		if (editor && sanitizeRichText(value) !== editor.getHTML()) {
+			editor.commands.setContent(sanitizeRichText(value), { emitUpdate: false });
+		}
+	}, [editor, value]);
+
+	if (!editor) return null;
+
+	const toolbarButton = (label: string, icon: React.ReactNode, action: () => void, active = false) => (
+		<button type="button" className={active ? "is-active" : ""} onClick={action} aria-label={label} title={label}>
+			{icon}
+		</button>
+	);
+
 	return (
-		<div
-			className="rich-text-editor"
-			contentEditable
-			suppressContentEditableWarning
-			role="textbox"
-			aria-label={ariaLabel}
-			onInput={(event) => onChange(event.currentTarget.innerHTML)}
-			dangerouslySetInnerHTML={{ __html: sanitizeRichText(value) }}
-		/>
+		<div className="rich-text-editor" role="textbox" aria-label={ariaLabel}>
+			<div className="rich-text-toolbar" aria-label="Text formatting">
+				{toolbarButton("Heading", <Heading2 size={16} />, () => editor.chain().focus().toggleHeading({ level: 2 }).run(), editor.isActive("heading", { level: 2 }))}
+				{toolbarButton("Bold", <Bold size={16} />, () => editor.chain().focus().toggleBold().run(), editor.isActive("bold"))}
+				{toolbarButton("Italic", <Italic size={16} />, () => editor.chain().focus().toggleItalic().run(), editor.isActive("italic"))}
+				{toolbarButton("Strikethrough", <Strikethrough size={16} />, () => editor.chain().focus().toggleStrike().run(), editor.isActive("strike"))}
+				<span className="rich-text-toolbar-divider" />
+				{toolbarButton("Bullet list", <List size={16} />, () => editor.chain().focus().toggleBulletList().run(), editor.isActive("bulletList"))}
+				{toolbarButton("Numbered list", <ListOrdered size={16} />, () => editor.chain().focus().toggleOrderedList().run(), editor.isActive("orderedList"))}
+				{toolbarButton("Blockquote", <Minus size={16} />, () => editor.chain().focus().toggleBlockquote().run(), editor.isActive("blockquote"))}
+				{toolbarButton("Code block", <Code2 size={16} />, () => editor.chain().focus().toggleCodeBlock().run(), editor.isActive("codeBlock"))}
+				<span className="rich-text-toolbar-divider" />
+				{toolbarButton("Undo", <Undo2 size={16} />, () => editor.chain().focus().undo().run())}
+				{toolbarButton("Redo", <Redo2 size={16} />, () => editor.chain().focus().redo().run())}
+				{toolbarButton("Clear formatting", <RemoveFormatting size={16} />, () => editor.chain().focus().clearNodes().unsetAllMarks().run())}
+			</div>
+			<EditorContent editor={editor} className="rich-text-content" />
+		</div>
 	);
 }
 
@@ -77,6 +114,7 @@ function NoteCard({
 	copied,
 	onSave,
 	onCancel,
+onAutoSave,
 }: {
 	note: ApiNote;
 	index: number;
@@ -91,7 +129,18 @@ function NoteCard({
 	copied: boolean;
 	onSave: (event: React.FormEvent<HTMLFormElement>) => void;
 	onCancel: () => void;
+	onAutoSave: () => void;
 }) {
+
+
+
+	useEffect(() => {
+		if (!editing) return;
+
+		const intervalId = window.setInterval(onAutoSave, 5 * 60 * 1000);
+		return () => window.clearInterval(intervalId);
+	}, [editing, onAutoSave]);
+
 	return (
 		<>
 			<div className="note-card-topline">
@@ -310,17 +359,22 @@ export function NotesPage() {
 		setEditDescription(note.desc);
 	};
 
-	const saveEdit = async (event: React.FormEvent<HTMLFormElement>) => {
-		event.preventDefault();
-		if (!editingNoteId || !editTitle.trim()) return;
-		const a=await useWorkspaceStore.getState().EditNotes(editingNoteId, {
+	const autoSaveEdit = useCallback(()=>{async () => {
+		if (!editingNoteId || !editTitle.trim() || !user?.id) return;
+
+		await useWorkspaceStore.getState().EditNotes(editingNoteId, {
 			_id: editingNoteId,
 			title: editTitle.trim(),
 			desc: editDescription,
 			dirid: directoryId ?? "",
-			uid: user?.id ?? "",
+			uid: user.id,
 		});
-        console.log("called",a)
+	}
+	}, [directoryId, editDescription, editTitle, editingNoteId, user?.id]);
+
+	const saveEdit = async (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		await autoSaveEdit();
 		setEditingNoteId(null);
 	};
 
@@ -434,7 +488,7 @@ export function NotesPage() {
 						) : null}
 						{nextNote && nextNoteIndex !== safeActiveIndex ? (
 							<div className={`note-card reader-card reader-card-next note-card-${nextNoteIndex % 4}`} aria-hidden="true">
-								<NoteCard note={nextNote} index={nextNoteIndex} editing={false} title="" description="" onTitleChange={() => undefined} onDescriptionChange={() => undefined} onEdit={() => undefined} onDelete={() => undefined} onCopy={() => undefined} copied={false} onSave={() => undefined} onCancel={() => undefined} />
+								<NoteCard note={nextNote} index={nextNoteIndex} editing={false} title="" description="" onTitleChange={() => undefined} onDescriptionChange={() => undefined} onEdit={() => undefined} onDelete={() => undefined} onCopy={() => undefined} copied={false} onSave={() => undefined} onCancel={() => undefined} onAutoSave={() => undefined} />
 							</div>
 						) : null}
 						<article
@@ -465,6 +519,7 @@ export function NotesPage() {
 									copied={copiedNoteId === activeNote._id}
 									onSave={saveEdit}
 									onCancel={() => setEditingNoteId(null)}
+									onAutoSave={() => void autoSaveEdit()}
 								/>
 							) : null}
 						</article>
