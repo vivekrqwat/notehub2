@@ -185,6 +185,7 @@ export function NotesPage() {
     const loadNotes=useWorkspaceStore(((state) => state.loadNotes))
 	const addNote = useWorkspaceStore((state) => state.addNote);
 	const { user } = UseAuth();
+	const userId = user?.id;
 	const [search, setSearch] = useState("");
 	const [isAdding, setIsAdding] = useState(false);
 	const [title, setTitle] = useState("");
@@ -360,16 +361,16 @@ export function NotesPage() {
 	};
 
 	const autoSaveEdit = useCallback(async () => {
-		if (!editingNoteId || !editTitle.trim() || !user?.id) return;
+		if (!editingNoteId || !editTitle.trim() || !userId) return;
 
 		await useWorkspaceStore.getState().EditNotes(editingNoteId, {
 			_id: editingNoteId,
 			title: editTitle.trim(),
 			desc: editDescription,
 			dirid: directoryId ?? "",
-			uid: user.id,
+			uid: userId,
 		});
-	}, [directoryId, editDescription, editTitle, editingNoteId, user?.id]);
+	}, [directoryId, editDescription, editTitle, editingNoteId, userId]);
 
 	const saveEdit = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
@@ -411,7 +412,7 @@ export function NotesPage() {
 				<p className="eyebrow">
 					{directory?.name ?? "Directory"} <span className="eyebrow-dot" />
 				</p>
-				<h1>Your notes</h1>
+				<h1>Your notes{user?.email}</h1>
 				<p className="notes-page-intro">
 					Keep the ideas in this space close, clear, and easy to revisit.
 				</p>

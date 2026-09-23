@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AuthPage } from './Pages/AuthPAge'
 import { HomePage } from './Pages/Home'
 import { NotesPage } from './Pages/NotesPage'
+import ProtectedRoute from './Auth/ProtectedRoute'
 
 
 
@@ -20,8 +21,12 @@ function App() {
 
 
     </Route>
-    <Route path="/home" element={<HomePage></HomePage>}></Route>
+    <Route element={<ProtectedRoute></ProtectedRoute>}>
+        <Route path="/home" element={<HomePage></HomePage>}></Route>
     <Route path="/notes/:directoryId" element={<NotesPage />}></Route>
+    
+    </Route>
+
       
 
     </Routes>

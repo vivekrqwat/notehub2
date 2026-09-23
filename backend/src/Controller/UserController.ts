@@ -33,13 +33,12 @@ export const UserReg = async (req: Request, res: Response) => {
   };
   
   const data = new UserModel(body);
-  const otpbody = { _id:data._id,email: email };
   console.log(data)
 
 
   const savedData = await data.save();
   console.log("datais saved")
-  const token = jwt.sign({ otpbody }, process.env.KEY, { expiresIn: "1h" });
+  const token = jwt.sign({ id: data._id, email: data.email }, process.env.KEY, { expiresIn: "1h" });
   res.cookie("jwt", token, {
     httpOnly: true,
     secure: false,
@@ -110,7 +109,9 @@ export const VerifyOtp = async (req: Request, res: Response) => {
   };
       if (!process.env.KEY) return setResponse(res, Messages.ENV, 505);
    
-  const user={id:Uotp._id,email:Uotp.email}
+  const userData = await UserModel.findOne({ email: Uotp.email }).select("_id email").lean();
+  if (!userData) return setResponse(res, Messages.WrongCred, 404);
+  const user={id:userData._id,email:userData.email}
    const token = jwt.sign( user , process.env.KEY, { expiresIn: "1h" });
    console.log("otp",token,user)
   res.cookie("jwt", token, {
