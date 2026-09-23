@@ -359,7 +359,7 @@ export function NotesPage() {
 		setEditDescription(note.desc);
 	};
 
-	const autoSaveEdit = useCallback(()=>{async () => {
+	const autoSaveEdit = useCallback(async () => {
 		if (!editingNoteId || !editTitle.trim() || !user?.id) return;
 
 		await useWorkspaceStore.getState().EditNotes(editingNoteId, {
@@ -369,7 +369,6 @@ export function NotesPage() {
 			dirid: directoryId ?? "",
 			uid: user.id,
 		});
-	}
 	}, [directoryId, editDescription, editTitle, editingNoteId, user?.id]);
 
 	const saveEdit = async (event: React.FormEvent<HTMLFormElement>) => {
