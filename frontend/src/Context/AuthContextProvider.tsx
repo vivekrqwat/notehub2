@@ -10,8 +10,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [check,setcheck]=useState<number>(0)
 
     useEffect( ()=>{
-       alert("hek")
+       
         dataApi.authCheck().then((res)=>{
+            setLoading(true)
             setUser(res)
 
         }).catch((requestError)=>{

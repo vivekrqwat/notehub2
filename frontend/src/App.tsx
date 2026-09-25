@@ -22,7 +22,7 @@ function App() {
 
     </Route>
     <Route element={<ProtectedRoute></ProtectedRoute>}>
-        <Route path="/home" element={<HomePage></HomePage>}></Route>
+        <Route path="/" element={<HomePage></HomePage>}></Route>
     <Route path="/notes/:directoryId" element={<NotesPage />}></Route>
     
     </Route>

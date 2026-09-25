@@ -47,7 +47,7 @@ export const AuthPage = ({ mode }: { mode: AuthMode }) => {
       } else {
         await signup(email, password)
       }
-      navigate(isLogin ? "/home" : "/login")
+      navigate(isLogin ? "/" : "/login")
     } catch (e) {
       console.log(e)
     }
