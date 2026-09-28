@@ -101,12 +101,7 @@ export const VerifyOtp = async (req: Request, res: Response) => {
     .select({ email: 1, _id: 1 })
     .lean();
   if (!Uotp) return setResponse(res, "Invalid or expired OTP.", 400);
-  const cookieOptions: any = {
-    httpOnly: true,
-    secure: false,
-    sameSite: "strict",
-    maxAge: 5 * 60 * 1000,
-  };
+  
       if (!process.env.KEY) return setResponse(res, Messages.ENV, 505);
    
   const userData = await UserModel.findOne({ email: Uotp.email }).select("_id email").lean();

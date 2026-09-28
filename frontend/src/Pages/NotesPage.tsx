@@ -49,7 +49,16 @@ function sanitizeRichText(value: string) {
 function richTextToPlainText(value: string) {
 	if (!value.includes("<")) return value;
 	const document = new DOMParser().parseFromString(value, "text/html");
-	return document.body.textContent ?? "";
+	const blockTags = new Set(["BLOCKQUOTE", "DIV", "H1", "H2", "H3", "LI", "OL", "P", "PRE", "UL"]);
+	const readNode = (node: Node): string => {
+		if (node.nodeType === Node.TEXT_NODE) return node.textContent ?? "";
+		if (node.nodeType !== Node.ELEMENT_NODE) return "";
+		const element = node as HTMLElement;
+		if (element.tagName === "BR") return "\n";
+		const content = Array.from(element.childNodes, readNode).join("");
+		return blockTags.has(element.tagName) ? `\n${content}\n` : content;
+	};
+	return Array.from(document.body.childNodes, readNode).join("").replace(/\n{3,}/g, "\n\n").replace(/^\n|\n$/g, "");
 }
 
 function RichTextEditor({ value, onChange, ariaLabel }: { value: string; onChange: (value: string) => void; ariaLabel: string }) {
@@ -346,7 +355,7 @@ export function NotesPage() {
 
 		await addNote(directoryId, {
 			title: title.trim(),
-			desc: description.trim(),
+			desc: richTextToPlainText(description).trim(),
 			uid: user.id,
 		});
 		setTitle("");
@@ -366,7 +375,7 @@ export function NotesPage() {
 		await useWorkspaceStore.getState().EditNotes(editingNoteId, {
 			_id: editingNoteId,
 			title: editTitle.trim(),
-			desc: editDescription,
+			desc: richTextToPlainText(editDescription),
 			dirid: directoryId ?? "",
 			uid: userId,
 		});
